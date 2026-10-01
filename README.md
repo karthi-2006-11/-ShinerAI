@@ -65,17 +65,17 @@ By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fi
 | **SAFE Examples (`target = 0`)** | **36,101 (87.46%)** | DO remains $\ge 3.0$ mg/L across full 2-hour future window |
 | **AT_RISK Examples (`target = 1`)** | **5,176 (12.54%)** | DO drops $< 3.0$ mg/L within 2-hour future window |
 | **Class Imbalance Ratio** | **6.97 : 1** | Moderately imbalanced class distribution |
-| **ML-Ready Columns** | **37** | 34 predictor features + 3 quality/target columns |
+| **ML-Ready Columns** | **37** | 34 input/metadata columns. The actual model predictors will be selected during Phase 3. (+ 3 quality/target columns) |
 | **Unexplained Rows** | **0 (0.00%)** | Mathematical identity strictly verified |
 | **Automated Tests Passing** | **24 / 24 (100%)** | `pytest -v` across data, cleaning, and leakage suites |
 | **Label Logic Validation** | **40 / 40 (100%)** | 20 SAFE + 20 AT_RISK samples verified against raw telemetry |
-| **Leakage Audit Status** | **PASS (0 violations)** | Zero future-reading leakage in predictor features |
+| **Leakage Audit Status** | **PASS (0 violations)** | Zero future-reading leakage in past input features |
 
 ---
 
 ## Data Flow Architecture
 
-The ShinerAI pipeline enforces strict temporal separation: **past data forms predictor features**, while **future data is used exclusively to assign target labels**.
+The ShinerAI pipeline enforces strict temporal separation: **past data forms input features**, while **future data is used exclusively to assign target labels**.
 
 ```text
 FWI Continuous Pond Telemetry (17 Ponds, 72,750 Rows)
@@ -104,7 +104,7 @@ Quarantine Artifacts     Quarantine Duplicates
 [PAST ONLY: T-120m to T]             [CURRENT STATE CHECK AT T]
 Contiguous >= 8 prior steps?         Is current DO >= 3.0 mg/L?
    NO -> Exclude Past (8,700)           NO -> Exclude Already Hypoxic (15,234)
-   YES -> 34 Predictor Features         YES -> Eligible Candidate
+   YES -> 34 Input/Metadata Columns     YES -> Eligible Candidate
          │                                    │
          └──────────────────┬─────────────────┘
                             ▼

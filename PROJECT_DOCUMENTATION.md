@@ -180,10 +180,10 @@ The raw telemetry represents authentic commercial field conditions. A systematic
 | **SAFE Percentage (ML Dataset)** | **87.46%** | — | Safe examples in ML-ready dataset |
 | **AT_RISK Percentage (ML Dataset)** | **12.54%** | — | At-risk examples in ML-ready dataset |
 | **Class Imbalance Ratio** | **6.97 : 1** | — | Moderately imbalanced class distribution |
-| **ML-Ready Columns** | **37** | — | 34 predictor features + 3 ground-truth/quality columns |
+| **ML-Ready Columns** | **37** | — | 34 input/metadata columns. The actual model predictors will be selected during Phase 3. (+ 3 target/quality columns) |
 | **Automated Tests Passing** | **24 / 24** | **100%** | `pytest -v` across data, cleaning, and leakage test suites |
 | **Label Validation Checks** | **40 / 40** | **100%** | 20 SAFE + 20 AT_RISK random samples independently verified |
-| **Leakage Audit Status** | **PASS (0 violations)** | — | Zero future-reading exposure in predictor features |
+| **Leakage Audit Status** | **PASS (0 violations)** | — | Zero future-reading exposure in past input features |
 | **Unexplained Rows** | **0** | **0.00%** | Strict mathematical identity verified |
 
 ---
@@ -264,7 +264,7 @@ flowchart TD
     subgraph S4["4. Historical Feature Construction (PAST ONLY: t-120m to t)"]
         ContSeg --> HistCheck{"History >= 2 Hours?<br/>(>= 8 prior readings)"}
         HistCheck -->|"No"| ExPast["Exclude: Insufficient Past<br/>(8,700 rows)"]
-        HistCheck -->|"Yes"| FeatGen["Construct 34 Predictor Features<br/>[DO_t, pH_t, Temp_t, Lags t-15m..t-120m]"]
+        HistCheck -->|"Yes"| FeatGen["Construct 34 Input/Metadata Columns<br/>[Current values + 24 historical lags + time-of-day + metadata]"]
     end
 
     subgraph S5["5. Baseline State Check at t"]
@@ -310,7 +310,7 @@ flowchart TD
 ## 25. Prediction Problem Definition
 ShinerAI frames early warning as an advance binary classification task:
 - **Prediction Timestamp ($T$):** The current moment at which the farm monitoring system evaluates pond conditions.
-- **Predictor Input Window:** The preceding 2-hour historical segment $[T - 120\text{ min}, T]$.
+- **Historical Input Window:** The preceding 2-hour historical segment $[T - 120\text{ min}, T]$.
 - **Prediction Target Horizon:** The subsequent 2-hour future window $(T, T + 120\text{ min}]$.
 - **Condition for Inquiry:** The pond must currently be in a safe, healthy state ($\text{DO}_T \ge 3.0\text{ mg/L}$).
 - **Target Question:** Will dissolved oxygen breach the critical threshold ($\text{DO} < 3.0\text{ mg/L}$) at any point during $(T, T + 120\text{ min}]$?
@@ -378,7 +378,7 @@ An example is certified as **AT_RISK (`target = 1`)** if and only if:
 
 ## 32. Data Leakage Prevention
 Data leakage occurs when information from the future is inadvertently introduced into feature inputs, leading to unrealistically optimistic validation metrics that collapse in production. ShinerAI implements strict structural defenses:
-1. **Strict Temporal Partitioning:** All 34 predictor features are constructed exclusively from timestamps $t \le T$.
+1. **Strict Temporal Partitioning:** All 34 input/metadata columns are constructed exclusively from timestamps $t \le T$. The actual model predictors will be selected during Phase 3.
 2. **Quarantined Target Columns:** Only two target columns exist in the ML dataset (`target` and `target_name`), derived from future readings $t > T$.
 3. **Automated Leakage Audit:** An automated scanner ([`tests/test_no_data_leakage.py`](file:///d:/FISH/tests/test_no_data_leakage.py) and [`results/reports/leakage_audit_report.json`](file:///d:/FISH/results/reports/leakage_audit_report.json)) verifies zero forward tokens (e.g., `lead`, `next`, `future`), confirming that future values never enter the feature matrix.
 
@@ -388,12 +388,31 @@ Data leakage occurs when information from the future is inadvertently introduced
 The final supervised learning dataset is stored at [`data/processed/ml_ready_dataset.csv`](file:///d:/FISH/data/processed/ml_ready_dataset.csv).
 - **Total Observations:** **41,277 rows**
 - **Total Columns:** **37 columns**
-- **Feature Breakdown:**
-  - 3 Metadata Columns: `pond_id`, `prediction_timestamp`, `segment_id`
-  - 27 Sensor Lag Features: 9 lags each for `do_lag_*`, `ph_lag_*`, `temp_lag_*` ($t, t-15\text{m}, \dots, t-120\text{m}$)
-  - 4 Temporal Context Features: `hour`, `minute`, `sin_hour`, `cos_hour` (capturing solar/diurnal cycles)
-  - 1 Quality Column: `data_quality_status`
-  - 2 Target Columns: `target` (0 or 1), `target_name` (`SAFE` or `AT_RISK`)
+- **Column Specification & Breakdown:**
+  The dataset contains **34 input/metadata columns. The actual model predictors will be selected during Phase 3.** (Note: `pond_id` and `prediction_timestamp` serve as metadata tracking and grouping keys, not numerical ML predictors).
+
+  The 37 columns in [`data/processed/ml_ready_dataset.csv`](file:///d:/FISH/data/processed/ml_ready_dataset.csv) match this header order:
+  - **Metadata Identifiers (2 columns):**
+    1. `pond_id` (string): Anonymized pond identifier (used for cross-pond grouping/splitting)
+    2. `prediction_timestamp` (string/datetime): Timestamp $T$ at which predictions are evaluated
+  - **Time-of-Day Features (2 columns):**
+    3. `hour_of_day` (int64): Hour of day in IST [0–23]
+    4. `minute_of_day` (int64): Minute of day [0–1439]
+  - **Current Telemetry at Time $T$ (3 columns):**
+    5. `current_do` (float64): Measured dissolved oxygen at time $T$ ($\ge 3.0$ mg/L)
+    6. `current_ph` (float64): Measured water pH at time $T$
+    7. `current_temperature` (float64): Measured water temperature (°C) at time $T$
+  - **Sequential Historical Telemetry / Lags (27 columns):**
+    8–16. `do_t`, `do_t_minus_15`, `do_t_minus_30`, `do_t_minus_45`, `do_t_minus_60`, `do_t_minus_75`, `do_t_minus_90`, `do_t_minus_105`, `do_t_minus_120` (float64): 9 sequential DO readings across the 2-hour window (1 at $t$, 8 historical lags)
+    17–25. `ph_t`, `ph_t_minus_15`, `ph_t_minus_30`, `ph_t_minus_45`, `ph_t_minus_60`, `ph_t_minus_75`, `ph_t_minus_90`, `ph_t_minus_105`, `ph_t_minus_120` (float64): 9 sequential pH readings across the 2-hour window (1 at $t$, 8 historical lags)
+    26–34. `temp_t`, `temp_t_minus_15`, `temp_t_minus_30`, `temp_t_minus_45`, `temp_t_minus_60`, `temp_t_minus_75`, `temp_t_minus_90`, `temp_t_minus_105`, `temp_t_minus_120` (float64): 9 sequential water temperature readings across the 2-hour window (1 at $t$, 8 historical lags)
+    *(Note: Across the 3 physical parameters, this comprises 3 current values at $t$ and 24 strictly past historical lag features from $t-15\text{m}$ to $t-120\text{m}$)*
+  - **Target & Quality Tracking Columns (3 columns):**
+    35. `target` (int64): Binary supervised target label (0 = SAFE, 1 = AT_RISK)
+    36. `target_name` (string): Human-readable label ('SAFE' or 'AT_RISK')
+    37. `data_quality_status` (string): Processing quality marker ('ml_ready')
+
+This 37-column specification exactly reflects the physical schema and header of [`data/processed/ml_ready_dataset.csv`](file:///d:/FISH/data/processed/ml_ready_dataset.csv).
 
 ---
 

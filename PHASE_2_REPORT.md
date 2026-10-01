@@ -11,7 +11,7 @@
 Phase 2 successfully transformed the 17 raw, continuous time-series pond CSV files (72,750 observations) into a robust, leak-free, supervised machine learning dataset ([`data/processed/ml_ready_dataset.csv`](file:///D:/FISH/data/processed/ml_ready_dataset.csv)) containing **41,277 examples**.
 
 Every observation in the final dataset consists of:
-- **Past 2-Hour Inputs:** 9 consecutive 15-minute readings ($t, t-15\text{m}, \dots, t-120\text{m}$) for Dissolved Oxygen, pH, and Temperature, plus time-of-day indicators (34 predictor features).
+- **Past 2-Hour Inputs:** 9 consecutive 15-minute readings ($t, t-15\text{m}, \dots, t-120\text{m}$) for Dissolved Oxygen, pH, and Temperature, plus time-of-day indicators (34 input/metadata columns. The actual model predictors will be selected during Phase 3).
 - **Current Healthy Baseline:** Current Dissolved Oxygen is strictly $\ge 3.0\text{ mg/L}$ with valid sensors.
 - **Future 2-Hour Binary Target:** 
   - `AT_RISK = 1`: DO drops below $3.0\text{ mg/L}$ at any point in the subsequent 2 hours.
@@ -103,23 +103,23 @@ At prediction time $T$, given that current $\text{DO} \ge 3.0\text{ mg/L}$:
 ## 7. Column Count Reconciled & Verified (37 Columns)
 
 Inspection of [`data/processed/ml_ready_dataset.csv`](file:///D:/FISH/data/processed/ml_ready_dataset.csv) confirms an **exact count of 37 columns**:
-- **34 Feature and Metadata Columns:**
-  - `pond_id` (str) — Pond identifier
-  - `prediction_timestamp` (str) — Timestamp $T$
-  - `hour_of_day` (int64) — Hour in IST [0–23]
-  - `minute_of_day` (int64) — Minute of day [0–1439]
+- **34 Input and Metadata Columns (The actual model predictors will be selected during Phase 3):**
+  - `pond_id` (str) — Pond identifier (metadata grouping key, not a numerical predictor)
+  - `prediction_timestamp` (str) — Timestamp $T$ (metadata timestamp, not a numerical predictor)
+  - `hour_of_day` (int64) — Hour in IST [0–23] (time-of-day feature)
+  - `minute_of_day` (int64) — Minute of day [0–1439] (time-of-day feature)
   - `current_do` (float64) — Current DO at time $T$ ($\ge 3.0$ mg/L)
   - `current_ph` (float64) — Current pH at time $T$
   - `current_temperature` (float64) — Current water temperature at time $T$
-  - 9 DO lag features: `do_t`, `do_t_minus_15`, `do_t_minus_30`, `do_t_minus_45`, `do_t_minus_60`, `do_t_minus_75`, `do_t_minus_90`, `do_t_minus_105`, `do_t_minus_120` (float64)
-  - 9 pH lag features: `ph_t`, `ph_t_minus_15`, `ph_t_minus_30`, `ph_t_minus_45`, `ph_t_minus_60`, `ph_t_minus_75`, `ph_t_minus_90`, `ph_t_minus_105`, `ph_t_minus_120` (float64)
-  - 9 Temp lag features: `temp_t`, `temp_t_minus_15`, `temp_t_minus_30`, `temp_t_minus_45`, `temp_t_minus_60`, `temp_t_minus_75`, `temp_t_minus_90`, `temp_t_minus_105`, `temp_t_minus_120` (float64)
+  - 9 DO readings across 2h window: `do_t`, `do_t_minus_15`, `do_t_minus_30`, `do_t_minus_45`, `do_t_minus_60`, `do_t_minus_75`, `do_t_minus_90`, `do_t_minus_105`, `do_t_minus_120` (float64)
+  - 9 pH readings across 2h window: `ph_t`, `ph_t_minus_15`, `ph_t_minus_30`, `ph_t_minus_45`, `ph_t_minus_60`, `ph_t_minus_75`, `ph_t_minus_90`, `ph_t_minus_105`, `ph_t_minus_120` (float64)
+  - 9 Temp readings across 2h window: `temp_t`, `temp_t_minus_15`, `temp_t_minus_30`, `temp_t_minus_45`, `temp_t_minus_60`, `temp_t_minus_75`, `temp_t_minus_90`, `temp_t_minus_105`, `temp_t_minus_120` (float64)
 - **3 Ground-Truth & Quality Columns:**
   - `target` (int64) — Binary supervised label (0 = SAFE, 1 = AT_RISK)
   - `target_name` (str) — String label ('SAFE' or 'AT_RISK')
-  - `data_quality_status` (str) — Data quality marker ('usable')
+  - `data_quality_status` (str) — Data quality marker ('ml_ready')
 
-Total: $34\text{ features} + 3\text{ target/quality columns} = \mathbf{37\text{ columns}}$.
+Total: $34\text{ input/metadata columns} + 3\text{ target/quality columns} = \mathbf{37\text{ columns}}$.
 
 ---
 
