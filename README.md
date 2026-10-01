@@ -4,7 +4,7 @@
 **GitHub Repository:** [https://github.com/karthi-2006-11/-ShinerAI.git](https://github.com/karthi-2006-11/-ShinerAI.git)  
 **Formal Reference:** [`PROJECT_DOCUMENTATION.md`](file:///d:/FISH/PROJECT_DOCUMENTATION.md)
 
-DataSet Link - (https://github.com/fish-welfare-initiative/Data-Campaign-Data?utm_source=chatgpt.com).
+DataSet Link - https://github.com/fish-welfare-initiative/Data-Campaign-Data.git.
 ---
 
 ## What is ShinerAI?
