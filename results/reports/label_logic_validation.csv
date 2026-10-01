@@ -1,0 +1,41 @@
+sample_id,assigned_target,pond_id,prediction_timestamp,current_do,min_future_do,future_readings_count,future_span_minutes,time_to_drop_minutes,current_do_ge_3_verified,label_logic_correct,verification_notes
+1,AT_RISK,ara2_4f79fc8d,2026-01-01 03:00:00,3.54,2.53,8,120.0,75.0,True,True,Verified: Crosses below 3.0 mg/L to 2.53 mg/L after 75 mins
+2,AT_RISK,ara2_d52ddb31,2025-12-15 05:30:00,3.21,2.48,8,120.0,15.0,True,True,Verified: Crosses below 3.0 mg/L to 2.48 mg/L after 15 mins
+3,AT_RISK,ara2_573a2826,2025-12-23 18:30:00,5.54,1.48,8,120.0,45.0,True,True,Verified: Crosses below 3.0 mg/L to 1.48 mg/L after 45 mins
+4,AT_RISK,ara2_ca187575,2025-12-28 22:15:00,3.0,1.44,8,120.0,60.0,True,True,Verified: Crosses below 3.0 mg/L to 1.44 mg/L after 60 mins
+5,AT_RISK,ara2_d52ddb31,2026-01-26 02:30:00,3.52,2.64,8,120.0,90.0,True,True,Verified: Crosses below 3.0 mg/L to 2.64 mg/L after 90 mins
+6,AT_RISK,ara2_573a2826,2026-01-24 14:45:00,12.55,1.97,8,120.0,15.0,True,True,Verified: Crosses below 3.0 mg/L to 1.97 mg/L after 15 mins
+7,AT_RISK,ara2_6ca69422,2026-01-04 01:30:00,5.93,1.46,8,120.0,30.0,True,True,Verified: Crosses below 3.0 mg/L to 1.46 mg/L after 30 mins
+8,AT_RISK,ara2_d52ddb31,2026-01-02 02:45:00,5.09,2.87,8,120.0,105.0,True,True,Verified: Crosses below 3.0 mg/L to 2.87 mg/L after 105 mins
+9,AT_RISK,ara2_573a2826,2026-01-10 14:00:00,7.06,2.39,8,120.0,105.0,True,True,Verified: Crosses below 3.0 mg/L to 2.39 mg/L after 105 mins
+10,AT_RISK,ara2_176528d3,2025-12-17 03:15:00,3.26,2.18,8,120.0,45.0,True,True,Verified: Crosses below 3.0 mg/L to 2.18 mg/L after 45 mins
+11,AT_RISK,ara2_ca187575,2025-12-19 01:15:00,4.09,2.81,8,120.0,90.0,True,True,Verified: Crosses below 3.0 mg/L to 2.81 mg/L after 90 mins
+12,AT_RISK,ara2_3eab831e,2025-12-08 00:30:05,4.31,2.09,8,120.0,45.0,True,True,Verified: Crosses below 3.0 mg/L to 2.09 mg/L after 45 mins
+13,AT_RISK,ara2_29660d32,2026-01-26 04:00:00,3.23,1.83,8,120.0,30.0,True,True,Verified: Crosses below 3.0 mg/L to 1.83 mg/L after 30 mins
+14,AT_RISK,ara2_d52ddb31,2026-01-09 22:45:00,4.05,2.95,8,120.0,105.0,True,True,Verified: Crosses below 3.0 mg/L to 2.95 mg/L after 105 mins
+15,AT_RISK,ara2_b3d128ac,2025-12-21 03:15:00,3.66,2.26,8,120.0,60.0,True,True,Verified: Crosses below 3.0 mg/L to 2.26 mg/L after 60 mins
+16,AT_RISK,ara2_3b2f3973,2025-12-18 13:00:00,6.56,1.03,8,120.0,15.0,True,True,Verified: Crosses below 3.0 mg/L to 1.03 mg/L after 15 mins
+17,AT_RISK,ara2_d52ddb31,2026-01-22 21:15:00,5.92,2.84,8,120.0,120.0,True,True,Verified: Crosses below 3.0 mg/L to 2.84 mg/L after 120 mins
+18,AT_RISK,ara2_6ca69422,2026-01-13 09:30:00,3.11,1.81,8,120.0,15.0,True,True,Verified: Crosses below 3.0 mg/L to 1.81 mg/L after 15 mins
+19,AT_RISK,ara2_29660d32,2026-01-27 04:30:00,3.15,2.05,7,120.0,45.0,True,True,Verified: Crosses below 3.0 mg/L to 2.05 mg/L after 45 mins
+20,AT_RISK,ara2_176528d3,2026-01-26 09:00:00,3.27,2.28,8,120.0,75.0,True,True,Verified: Crosses below 3.0 mg/L to 2.28 mg/L after 75 mins
+21,SAFE,ara2_0f143c64,2025-12-21 00:45:00,10.48,8.8,8,120.0,N/A,True,True,Verified: Maintained DO >= 8.80 mg/L continuously across 8 readings through T+120m
+22,SAFE,ara2_176528d3,2025-12-14 07:45:00,3.47,3.54,8,120.0,N/A,True,True,Verified: Maintained DO >= 3.54 mg/L continuously across 8 readings through T+120m
+23,SAFE,ara2_3eab831e,2025-12-28 14:30:17,7.22,8.51,8,120.0,N/A,True,True,Verified: Maintained DO >= 8.51 mg/L continuously across 8 readings through T+120m
+24,SAFE,ara2_3b2f3973,2026-01-27 13:00:00,14.24,14.88,8,120.0,N/A,True,True,Verified: Maintained DO >= 14.88 mg/L continuously across 8 readings through T+120m
+25,SAFE,ara2_3ed4df8e,2026-01-11 11:45:00,5.8,5.94,8,120.0,N/A,True,True,Verified: Maintained DO >= 5.94 mg/L continuously across 8 readings through T+120m
+26,SAFE,ara2_6ca69422,2026-01-29 22:45:00,9.31,4.69,8,120.0,N/A,True,True,Verified: Maintained DO >= 4.69 mg/L continuously across 8 readings through T+120m
+27,SAFE,ara2_176528d3,2026-01-07 06:30:00,3.27,3.23,8,120.0,N/A,True,True,Verified: Maintained DO >= 3.23 mg/L continuously across 8 readings through T+120m
+28,SAFE,ara2_6ca69422,2026-01-30 01:45:00,5.93,4.41,8,120.0,N/A,True,True,Verified: Maintained DO >= 4.41 mg/L continuously across 8 readings through T+120m
+29,SAFE,ara2_c9cdacda,2026-01-10 05:45:15,5.42,4.53,8,120.0,N/A,True,True,Verified: Maintained DO >= 4.53 mg/L continuously across 8 readings through T+120m
+30,SAFE,ara2_3b2f3973,2026-01-18 20:15:00,16.11,12.22,8,120.0,N/A,True,True,Verified: Maintained DO >= 12.22 mg/L continuously across 8 readings through T+120m
+31,SAFE,ara2_0f143c64,2026-01-06 09:15:00,4.66,4.9,8,120.0,N/A,True,True,Verified: Maintained DO >= 4.90 mg/L continuously across 8 readings through T+120m
+32,SAFE,ara2_ca187575,2026-01-16 08:30:00,3.73,4.28,8,120.0,N/A,True,True,Verified: Maintained DO >= 4.28 mg/L continuously across 8 readings through T+120m
+33,SAFE,ara2_c9cdacda,2025-12-23 04:30:08,4.28,3.17,8,120.0,N/A,True,True,Verified: Maintained DO >= 3.17 mg/L continuously across 8 readings through T+120m
+34,SAFE,ara2_29660d32,2026-01-27 22:45:00,5.58,4.72,8,120.0,N/A,True,True,Verified: Maintained DO >= 4.72 mg/L continuously across 8 readings through T+120m
+35,SAFE,ara2_c9cdacda,2025-12-12 13:45:04,13.81,8.94,8,120.0,N/A,True,True,Verified: Maintained DO >= 8.94 mg/L continuously across 8 readings through T+120m
+36,SAFE,ara2_0f143c64,2026-01-01 19:45:00,8.9,6.17,8,120.0,N/A,True,True,Verified: Maintained DO >= 6.17 mg/L continuously across 8 readings through T+120m
+37,SAFE,ara2_0677080b,2026-01-14 10:15:00,5.19,3.33,8,120.0,N/A,True,True,Verified: Maintained DO >= 3.33 mg/L continuously across 8 readings through T+120m
+38,SAFE,ara2_29660d32,2026-01-07 18:45:00,8.52,6.35,8,120.0,N/A,True,True,Verified: Maintained DO >= 6.35 mg/L continuously across 8 readings through T+120m
+39,SAFE,ara2_0677080b,2026-01-17 20:45:00,4.74,3.18,8,120.0,N/A,True,True,Verified: Maintained DO >= 3.18 mg/L continuously across 8 readings through T+120m
+40,SAFE,ara2_c9cdacda,2025-12-11 22:30:03,9.15,8.71,8,120.0,N/A,True,True,Verified: Maintained DO >= 8.71 mg/L continuously across 8 readings through T+120m

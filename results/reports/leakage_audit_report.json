@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "total_ml_examples": 41277,
+  "total_columns": 37,
+  "feature_columns_count": 34,
+  "suspicious_forward_feature_names": [],
+  "historical_lag_features_count": 24,
+  "current_time_features_count": 6,
+  "features_strictly_past_or_current": true,
+  "target_columns_quarantined": [
+    "target",
+    "target_name"
+  ],
+  "future_reading_overlap_in_features": false,
+  "verification_statement": "All feature columns strictly originate from timestamps <= T. Target labels are constructed strictly from readings > T and <= T + 2h."
+}

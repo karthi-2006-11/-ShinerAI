@@ -1,0 +1,21 @@
+{
+  "total_raw_observations": 72750,
+  "total_usable_observations": 71609,
+  "excluded_sensor_artifacts": 629,
+  "excluded_conflicting_duplicates": 512,
+  "total_candidate_timestamps_do_ge_3": 47675,
+  "excluded_already_low_do": 15234,
+  "excluded_insufficient_past_history": 8700,
+  "excluded_insufficient_future_coverage": 6398,
+  "total_excluded_from_ml": 31473,
+  "total_ml_ready_examples": 41277,
+  "safe_count": 36101,
+  "at_risk_count": 5176,
+  "safe_pct": 87.46,
+  "at_risk_pct": 12.54,
+  "class_ratio": "6.97 : 1 (SAFE : AT_RISK)",
+  "class_balance_description": "moderately imbalanced class distribution",
+  "number_of_ponds_represented": 17,
+  "total_accounted_rows": 72750,
+  "unexplained_rows": 0
+}

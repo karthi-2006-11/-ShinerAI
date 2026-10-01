@@ -1,0 +1,12 @@
+Category,Count,Percentage_of_Raw,Stage,Description
+Raw Ingested Observations,72750,100.00%,Raw Ingestion,Total continuous monitoring readings from 17 ponds in data/raw/csv/
+Excluded: Exact Sensor Artifacts (Zeros),629,0.86%,Data Cleaning,"Readings with DO=0, pH=0, or Temp=0 caused by hardware reset/disconnect (quarantined)"
+Excluded: Conflicting Duplicate Timestamps,512,0.70%,Data Cleaning,All records involved in identical timestamp collisions with conflicting values
+Usable Baseline Observations,71609,98.43%,Baseline Filter,Valid unique readings with non-zero sensor measurements eligible for windowing
+Excluded: Current DO Already Below 3.0 mg/L,15234,20.94%,Eligibility Window,Pond is already in hypoxia at prediction time T; cannot serve as early-warning candidate
+Excluded: Insufficient Past History (<2h),8700,11.96%,Feature Construction,Readings with fewer than 8 prior points in contiguous segment; cannot form 2h lags
+Excluded: Insufficient Future Coverage,6398,8.79%,Target Evaluation,Sensor gap occurred in future 2h window with no low-DO observed; excluded to prevent false safe
+Final ML-Ready: SAFE (target=0),36101,49.62%,Final ML Dataset,Current DO >= 3.0 and maintained DO >= 3.0 continuously across the subsequent 2 hours
+Final ML-Ready: AT_RISK (target=1),5176,7.11%,Final ML Dataset,Current DO >= 3.0 and observed future drop below 3.0 within the subsequent 2 hours
+Total Accounted Rows,72750,100.00%,Reconciliation,Sum of mutually exclusive categories: Artifacts + Duplicates + LowDO + Past + Future + ML
+Unexplained Rows,0,0.00%,Reconciliation,Discrepancy count (verified strictly zero)

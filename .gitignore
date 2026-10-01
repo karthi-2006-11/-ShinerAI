@@ -1,0 +1,20 @@
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Raw aquaculture telemetry dataset (DO NOT COMMIT)
+data/raw/csv/
+
+# Scratch & temporary logs
+scratch/
+*.log
