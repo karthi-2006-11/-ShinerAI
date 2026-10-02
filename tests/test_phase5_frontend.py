@@ -109,6 +109,17 @@ def test_static_javascript_served(client):
     assert "DEMO_SCENARIOS" in js
 
 
+def test_static_aquarium_javascript_served(client):
+    """GET /aquarium.js serves valid aquarium animation engine."""
+    response = client.get("/aquarium.js")
+    assert response.status_code == 200
+    assert "javascript" in response.content_type
+    js = response.get_data(as_text=True)
+    assert "Goldfish" in js
+    assert "FishGroup" in js
+    assert "aquarium-canvas" in js
+
+
 # ==============================================================================
 # 2. HTML Structure & Accessibility Tests
 # ==============================================================================
@@ -175,6 +186,9 @@ def test_html_accessibility_elements():
     # Check that labels associate with inputs
     assert '<label for="pondId">' in html
     assert '<label for="currentDo">' in html
+    # Aquarium visual background must be marked aria-hidden for screen readers
+    assert 'id="aquarium-background" aria-hidden="true"' in html
+    assert 'id="aquarium-canvas"' in html
 
 
 # ==============================================================================

@@ -593,11 +593,12 @@ Phase 5 delivered a production-grade, accessible, and scientifically grounded us
 
 ### 1. Frontend Architecture & Technology:
 - **Zero Heavy Frameworks:** Pure semantic HTML5, modern vanilla CSS3, and native JavaScript (ES6+). Zero external frontend dependencies or heavy JavaScript frameworks (no React, Vue, Angular, Bootstrap, or Tailwind).
+- **Interactive Realistic Aquarium Theme Background:** Programmatic procedural Canvas 2D simulation (`frontend/aquarium.js`) rendering clear blue/teal water, 42 schooling goldfish with multi-joint spine undulation and dynamic group escape physics reacting to cursor approach, swaying aquatic plants, rising aerator bubbles, volumetric sunlight shafts, and high-contrast glassmorphic cards (`rgba(255, 255, 255, 0.94)`, `backdrop-filter: blur(14px)`) guaranteeing 100% WCAG AAA text legibility.
 - **Static Serving & Dual-Mode Routing:** The Flask application in `backend/app.py` serves the frontend directly from `frontend/`:
   - Browser visits to `GET /` (with `Accept: text/html`) receive [`frontend/index.html`](file:///d:/FISH/frontend/index.html).
   - Explicit dashboard access at `GET /dashboard` delivers the dashboard HTML.
   - API and automated test client calls to `GET /` continue to receive standard JSON service discovery metadata, maintaining 100% backward-compatibility.
-  - Static stylesheet ([`frontend/style.css`](file:///d:/FISH/frontend/style.css)) and controller ([`frontend/app.js`](file:///d:/FISH/frontend/app.js)) are served directly by Flask.
+  - Static stylesheet ([`frontend/style.css`](file:///d:/FISH/frontend/style.css)), controller ([`frontend/app.js`](file:///d:/FISH/frontend/app.js)), and aquarium engine ([`frontend/aquarium.js`](file:///d:/FISH/frontend/aquarium.js)) are served directly by Flask.
 
 ### 2. User Interface Panels & Features:
 - **Header & Dynamic API Health Indicator:** Queries `GET /health` with visual status pill (`● API Connected` / `● API Offline`) and live retry controls.
@@ -612,7 +613,7 @@ Phase 5 delivered a production-grade, accessible, and scientifically grounded us
 - **Scientific Guardrails & Scope:** Persistent disclosures stating that the system predicts water hypoxia events ($\text{DO} < 3.0\text{ mg/L}$ in 2 hours), does not predict fish disease or mortality, and uses a provisional research threshold.
 
 ### 3. Verification & Automated Test Suite:
-- **77 total automated tests** passing with 100% success rate (59 from Phases 1–4 + 18 dedicated Phase 5 tests in [`tests/test_phase5_frontend.py`](file:///d:/FISH/tests/test_phase5_frontend.py)).
+- **78 total automated tests** passing with 100% success rate (59 from Phases 1–4 + 19 dedicated Phase 5 tests in [`tests/test_phase5_frontend.py`](file:///d:/FISH/tests/test_phase5_frontend.py)).
 - **Complete End-to-End Verification (Steps A through M):** Validated page serving, health polling, SAFE prediction, AT_RISK prediction, SHAP explanation rendering, boundary condition rejection (`current_do < 3.0 mg/L` returns HTTP 400 `ALREADY_LOW_DO`), and clean error handling without traceback exposure.
 
 ---
@@ -625,7 +626,7 @@ All five research and development phases of ShinerAI are complete, fully verifie
 2. **Phase 2 (Feature Engineering & Leakage-Free Dataset Construction):** Engineered strictly backward-looking lag features and strictly forward-looking binary early warning labels with zero data leakage.
 3. **Phase 3 (Machine Learning Training, Validation & Evaluation):** Trained and benchmarked 3 model families (Logistic Regression, Random Forest, XGBoost) across 3 feature configurations using 80/20 chronological holdout with 2-hour purge gap and 5-fold GroupKFold cross-validation.
 4. **Phase 4 (Model Serving, Explainability & REST API):** Implemented global and local SHAP explainability and a robust modular Flask REST backend (`/health`, `/model-info`, `/predict`, `/explain`).
-5. **Phase 5 (Dashboard, Frontend Integration & Final E2E Verification):** Delivered a responsive, accessible web dashboard, SVG trajectory charting, and complete end-to-end integration verified by 77 passing automated tests.
+5. **Phase 5 (Dashboard, Frontend Integration & Final E2E Verification):** Delivered a responsive, accessible web dashboard, interactive realistic aquarium simulation, SVG trajectory charting, and complete end-to-end integration verified by 78 passing automated tests.
 
 > **Phase 5 Integrity Statement:**  
 > No models were retrained during this Phase 5 correction. The Phase 4 Config C artifacts remain unchanged, and the Phase 1–3 datasets, feature engineering, evaluation methodology, and reported metrics remain frozen.

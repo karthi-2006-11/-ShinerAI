@@ -6,7 +6,13 @@
     <title>ShinerAI — Early Warning System for Low Dissolved Oxygen</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="aquarium-theme">
+    <!-- Interactive Realistic Aquarium Theme Background -->
+    <div id="aquarium-background" aria-hidden="true">
+        <canvas id="aquarium-canvas"></canvas>
+        <div id="aquarium-overlay"></div>
+    </div>
+
     <!-- Top Header -->
     <header class="app-header" role="banner">
         <div class="header-content container">
@@ -430,5 +436,6 @@
     </footer>
 
     <script src="app.js"></script>
+    <script src="aquarium.js"></script>
 </body>
 </html>

@@ -180,10 +180,35 @@ Therefore, ShinerAI enforces a strict boundary rule:
 
 ---
 
-## 8. Summary of What You Learned in Phase 5
+## 8. How the Interactive Aquarium Background Works
+
+To make ShinerAI feel deeply connected to aquaculture while maintaining strict scientific readability, the dashboard includes a custom procedural Canvas 2D simulation (`frontend/aquarium.js`):
+
+1. **Why Canvas 2D Instead of Video or WebGL?**  
+   - Large video loops consume 50–100 MB of bandwidth, repeat visibly, and cannot interact with the mouse.
+   - Heavy 3D engines (like Three.js) would add megabytes of JavaScript dependencies.
+   - Canvas 2D provides smooth 60fps organic motion, zero external dependencies, and instant load time (< 41 KB of pure JavaScript).
+
+2. **How Do the Goldfish Move?**  
+   - **Anatomical Spine Undulation:** Each fish computes a traveling sinusoidal wave along 5 spine segments:
+     $$\text{offset}_i = \text{amplitude} \cdot \sin(\text{phase} - i \cdot 0.5)$$
+     This creates realistic body bends and causes the translucent tail fin to ripple gently behind it.
+   - **Schooling Flocking Dynamics:** Fish are grouped into cohorts. Each fish computes steering forces toward its group centroid (cohesion), away from immediate neighbors (separation), and in the general group heading (alignment).
+   - **Interactive Group Escape Physics:** The canvas tracks cursor movement. When the mouse approaches within 180–260 pixels, nearby fish sense the disturbance, accelerate smoothly away with organic scatter, and gradually decelerate back to calm slow swimming once the cursor departs.
+
+3. **Ensuring 100% Text Readability (WCAG Compliance):**  
+   - Background canvas has `pointer-events: none` and `aria-hidden="true"` so it never blocks clicks or interferes with screen readers.
+   - All dashboard cards use **glassmorphism** with 94% white opacity (`rgba(255, 255, 255, 0.94)`) and a `backdrop-filter: blur(14px)`.
+   - Dark primary text (`#0f172a`) on the cards exceeds WCAG AAA contrast requirements, while swimming fish remain clearly visible in the negative spaces and margins around the cards.
+   - Automatic CPU throttling: when you switch browser tabs, the Page Visibility API (`document.hidden`) pauses the render loop, reducing battery and CPU usage to zero!
+
+---
+
+## 9. Summary of What You Learned in Phase 5
 
 1. **API-First Architecture:** Clean decoupling between frontend presentation and backend ML inference.
 2. **Input Normalization:** Translating raw user inputs into canonical feature vectors expected by the model.
 3. **Operational Guardrails:** Preventing nonsensical model predictions when the boundary condition is already breached.
 4. **Interpretable AI:** Rendering both global model importance and single-instance local SHAP attributions so end users understand why a prediction was made.
 5. **Scientific Responsibility:** Distinguishing water quality risk from fish mortality and presenting machine-learning outputs with proper caveats.
+6. **Accessible Aesthetics:** Adding a rich, interactive procedural aquarium theme that enhances domain engagement while guaranteeing strict WCAG text contrast and zero CPU drain when idle.
