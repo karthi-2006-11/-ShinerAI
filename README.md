@@ -43,9 +43,17 @@ By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fi
 - **Formal Project Documentation** — **COMPLETED**
   - Comprehensive 40-section technical specification: [`PROJECT_DOCUMENTATION.md`](file:///d:/FISH/PROJECT_DOCUMENTATION.md).
 
-- **Phase 3: Feature Engineering & Baseline Modeling** — **PENDING USER APPROVAL**
+- **Phase 3: Machine Learning Training & Evaluation** — **COMPLETED**
+  - Evaluated baselines (Majority PR-AUC: 0.1142; Current-DO PR-AUC: 0.6149).
+  - Evaluated 3 feature configurations (Config A: Current, Config B: Current + History, Config C: DO History).
+  - Executed leak-free temporal holdout (80% train / 20% test per pond with 2h purge gap).
+  - Evaluated 5-fold GroupKFold unseen-pond generalization across all 17 ponds.
+  - Selected Random Forest (PR-AUC 0.7420–0.7471, F1 0.6233–0.6602, Specificity 91.2%–93.1%) as primary candidate, with XGBoost as high-recall alternative (PR-AUC 0.7353–0.7574, Recall 79.3%–79.8%).
+  - Serialized model artifacts under `models/` with metadata specification.
+  - Detailed report: [`PHASE_3_REPORT.md`](file:///d:/FISH/PHASE_3_REPORT.md).
+  - Beginner guide: [`PHASE_3_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_3_BEGINNER_GUIDE.md).
 
----
+- **Phase 4: System Integration & Inference Service** — **PENDING USER APPROVAL**
 
 ## Dataset Health & Reconciliation Summary
 
@@ -143,6 +151,12 @@ fish-farm-early-warning/
 │       ├── cleaned_pond_data.csv    # Cleaned time series with QC status & segment IDs
 │       └── ml_ready_dataset.csv     # 41,277 supervised learning examples (37 columns)
 │
+├── models/
+│   ├── logistic_regression.joblib   # Scaled Logistic Regression candidate
+│   ├── random_forest.joblib         # Random Forest candidate (recommended)
+│   ├── xgboost.joblib               # XGBoost candidate (high-recall alternative)
+│   └── model_metadata.json          # Complete hyperparameters, metadata & metrics
+│
 ├── notebooks/
 │   └── 01_dataset_audit.ipynb       # Interactive walkthrough of Phase 1 audit
 │
@@ -151,11 +165,18 @@ fish-farm-early-warning/
 │   ├── data_loader.py               # Reusable data discovery, parsing, and combination
 │   ├── data_quality.py              # Quality audits, interval checks, QC & feasibility logic
 │   ├── audit.py                     # Automated Phase 1 audit pipeline
-│   └── cleaning.py                  # Phase 2 cleaning, segmentation, and ML dataset pipeline
+│   ├── cleaning.py                  # Phase 2 cleaning, segmentation, and ML dataset pipeline
+│   ├── model_utils.py               # Phase 3 feature configs, temporal splitting, metrics
+│   ├── train.py                     # Phase 3 model training & serialization pipeline
+│   └── evaluate.py                  # Phase 3 per-pond & GroupKFold evaluation pipeline
 │
 ├── results/
 │   ├── figures/                     # Standalone Matplotlib figures
-│   │   ├── data_flow_diagram.png    # End-to-end pipeline architecture
+│   │   ├── data_flow_diagram.png    # End-to-end Phase 1-2 pipeline architecture
+│   │   ├── ml_pipeline_diagram.png  # Phase 3 ML workflow architecture
+│   │   ├── roc_curve_comparison.png # ROC curves across models
+│   │   ├── pr_curve_comparison.png  # Precision-Recall curves across models
+│   │   ├── confusion_*.png          # Confusion matrices for candidate models
 │   │   ├── do_time_series_*.png     # 17 individual pond DO plots
 │   │   ├── example_at_risk_event.png# Example AT_RISK window (past + future drop)
 │   │   ├── example_safe_event.png   # Example SAFE window (past + stable future)
@@ -163,6 +184,11 @@ fish-farm-early-warning/
 │   │   └── at_risk_percentage_by_pond.png
 │   │
 │   └── reports/                     # Tabular CSV and JSON reports
+│       ├── model_comparison.csv     # Phase 3 model benchmark results across configurations
+│       ├── model_comparison.json    # Machine-readable model benchmarks
+│       ├── per_pond_model_performance.csv # Pond-by-pond performance breakdown
+│       ├── group_kfold_performance.csv    # 5-Fold GroupKFold unseen-pond results
+│       ├── temporal_split_accounting.csv  # Train/purge/test row accounting per pond
 │       ├── phase2_row_accounting.csv# Strict numerical row reconciliation (0 unexplained)
 │       ├── label_logic_validation.csv# Audit of random SAFE and AT_RISK prediction windows
 │       ├── leakage_audit_report.json# Formal verification of zero future leakage
@@ -177,16 +203,20 @@ fish-farm-early-warning/
 ├── tests/
 │   ├── test_data_pipeline.py        # Phase 1 loader & audit tests (10 tests)
 │   ├── test_cleaning_pipeline.py    # Phase 2 cleaning & dataset schema tests (9 tests)
-│   └── test_no_data_leakage.py      # Phase 2 future leakage & target window tests (5 tests)
+│   ├── test_no_data_leakage.py      # Phase 2 future leakage & target window tests (5 tests)
+│   ├── test_phase3_splits.py        # Phase 3 temporal holdout & purge tests (3 tests)
+│   └── test_phase3_models.py        # Phase 3 model, artifact & metric tests (5 tests)
 │
 ├── requirements.txt                 # Lightweight Python dependencies
 ├── pytest.ini                       # Pytest path configuration
 ├── README.md                        # Project landing page & quickstart
-├── PROJECT_DOCUMENTATION.md         # Formal 40-section project reference
+├── PROJECT_DOCUMENTATION.md         # Formal 41-section project reference
 ├── DATASET_AUDIT.md                 # In-depth Phase 1 audit report
 ├── QC_CLEANING_POLICY.md            # Phase 2 data cleaning governance policy
 ├── PHASE_2_REPORT.md                # Comprehensive Phase 2 execution report
-└── PHASE_2_BEGINNER_GUIDE.md        # Beginner guide to features, labels & leakage
+├── PHASE_2_BEGINNER_GUIDE.md        # Beginner guide to features, labels & leakage
+├── PHASE_3_REPORT.md                # Comprehensive Phase 3 ML execution report
+└── PHASE_3_BEGINNER_GUIDE.md        # Beginner guide to machine learning & metrics
 ```
 
 ---
@@ -208,12 +238,22 @@ python src/audit.py
 python src/cleaning.py
 ```
 
-### 4. Run the Full Automated Test Suite (24 Tests)
+### 4. Run Phase 3 Model Training
+```powershell
+python src/train.py
+```
+
+### 5. Run Phase 3 Model Evaluation & Visualizations
+```powershell
+python src/evaluate.py
+```
+
+### 6. Run the Full Automated Test Suite (32 Tests)
 ```powershell
 pytest -v
 ```
 
-### 5. Launch JupyterLab
+### 7. Launch JupyterLab
 ```powershell
 jupyter lab
 ```

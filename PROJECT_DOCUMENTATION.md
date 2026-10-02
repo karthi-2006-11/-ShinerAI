@@ -497,18 +497,57 @@ In keeping with rigorous scientific integrity, several real-world dataset limita
 
 ---
 
-## 40. Phase 3 Starting Point
-With Phase 1 and Phase 2 frozen, verified, and committed to version control, Phase 3 is primed to begin:
-- **Baseline Feature Extraction:** Derive additional feature transforms (DO trend slopes, rolling standard deviations, thermal differences).
-- **Chronological & Grouped Splitting:** Implement time-based (train on early weeks, test on later weeks) and pond-based (leave-ponds-out cross-validation) evaluation splits to prevent temporal leakage.
-- **Baseline Model Benchmarking:** Train initial interpretable baselines (Logistic Regression, Random Forest, LightGBM / XGBoost).
-- **Evaluation Metric Selection:** Prioritize Precision, Recall, PR-AUC, and F2-score to minimize false negatives (missed hypoxia events) under the 6.97:1 class imbalance.
+## 40. Phase 3 Summary: Machine Learning Training & Evaluation
+**Objective:** Train, evaluate, and benchmark classical machine learning models for 2-hour low-DO early warning using strictly leak-free validation regimes.
+
+### 1. Methodology & Leakage Prevention:
+- **Feature Configurations:**
+  - **Config A (Current Only, 5 features):** `current_do`, `current_ph`, `current_temperature`, `hour_of_day`, `minute_of_day`.
+  - **Config B (Current + Full History, 29 features):** Config A + 8 DO lags ($t-15\text{m} \dots t-120\text{m}$) + 8 pH lags + 8 Temp lags.
+  - **Config C (DO History Only, 11 features):** `current_do`, `hour_of_day`, `minute_of_day` + 8 DO lags.
+  - *(Redundant features `do_t`, `ph_t`, `temp_t` and non-predictors were explicitly omitted).*
+- **Primary Evaluation (Temporal Holdout):**
+  - Evaluated chronologically per pond: earlier 80% of time for training (32,908 examples), later 20% of time for testing (8,261 examples).
+  - **2-Hour Purge Gap:** Purged 108 boundary observations whose future 2-hour target window crossed into the test period, guaranteeing zero label leakage.
+- **Secondary Evaluation (Unseen-Pond Generalization):**
+  - 5-Fold GroupKFold cross-validation across all 17 ponds ensuring models were evaluated strictly on ponds excluded from training.
+- **Imbalance Handling:**
+  - Applied algorithmic sample weighting ($\text{scale\_pos\_weight} = 6.80$, `class_weight='balanced'`) based exclusively on the training partition without synthetic oversampling.
+
+### 2. Empirical Benchmark Results (Temporal Holdout, 8,261 Examples):
+
+| Model | Feature Set | PR-AUC | ROC-AUC | F1-Score | Recall | Precision | Specificity | Accuracy |
+|---|---|---|---|---|---|---|---|---|
+| **Majority Baseline** | None | 0.1142 | 0.5000 | 0.0000 | 0.0000 | 0.0000 | 1.0000 | 0.8858 |
+| **Current-DO Baseline ($\le 4.2$)** | `current_do` only | 0.6149 | 0.9024 | 0.4516 | 0.8961 | 0.3019 | 0.7330 | 0.7516 |
+| **Logistic Regression** | Config A (Current Only) | 0.6019 | 0.8994 | 0.4274 | 0.9003 | 0.2802 | 0.7020 | 0.7246 |
+| **Random Forest** | Config A (Current Only) | 0.7107 | 0.9116 | 0.6174 | 0.7709 | 0.5149 | 0.9064 | 0.8909 |
+| **XGBoost** | Config A (Current Only) | 0.7317 | 0.9150 | 0.5817 | 0.8102 | 0.4537 | 0.8743 | 0.8670 |
+| **Logistic Regression** | Config B (Current + History) | 0.6763 | 0.9078 | 0.4295 | 0.8993 | 0.2821 | 0.7051 | 0.7273 |
+| **Random Forest** | Config B (Current + History) | **0.7420** | **0.9169** | **0.6233** | **0.7614** | **0.5276** | **0.9121** | **0.8949** |
+| **XGBoost** | Config B (Current + History) | **0.7353** | **0.9171** | **0.5922** | **0.7932** | **0.4725** | **0.8859** | **0.8753** |
+| **Logistic Regression** | Config C (DO History Only) | 0.6550 | 0.9093 | 0.4549 | 0.8940 | 0.3051 | 0.7376 | 0.7555 |
+| **Random Forest** | Config C (DO History Only) | **0.7471** | **0.9144** | **0.6602** | **0.7561** | **0.5859** | **0.9311** | **0.9111** |
+| **XGBoost** | Config C (DO History Only) | **0.7574** | **0.9162** | **0.6285** | **0.7975** | **0.5186** | **0.9046** | **0.8924** |
+
+### 3. Key Scientific Conclusions:
+1. **Value of Temporal History:** Adding 2-hour lag history improved PR-AUC by +0.074 for Logistic Regression, +0.036 for Random Forest, and +0.026 for XGBoost.
+2. **Generalization Across Unseen Ponds:** 5-Fold GroupKFold demonstrated stable cross-pond generalization (Random Forest PR-AUC: $0.7086 \pm 0.0456$; XGBoost PR-AUC: $0.7183 \pm 0.0467$).
+3. **Selected Candidate Model:** **Random Forest** is recommended as the primary candidate for Phase 4 deployment due to superior Specificity (91.2%), highest F1 (0.6233–0.6602), and lowest false alarm burden on farm operations, with **XGBoost** serving as an alternative where maximum Recall is prioritized.
 
 ---
 
-## Appendix: Dataset Visualizations Reference
+## 41. Phase 4 Starting Point
+When Phase 4 is approved, the project will transition to **System Integration & Inference Service**:
+- Package the serialized model artifacts ([`models/random_forest.joblib`](file:///d:/FISH/models/random_forest.joblib), [`models/xgboost.joblib`](file:///d:/FISH/models/xgboost.joblib)) into a lightweight inference service.
+- Build an API endpoint (FastAPI / Flask) accepting real-time pond telemetry streams and returning risk probabilities.
+- Provide operational threshold calibration for farm operators.
 
-The following figures illustrate the audited data distributions and cleaning operations:
+---
+
+## Appendix: Dataset & Model Visualizations Reference
+
+The following figures illustrate the data distributions, pipeline architecture, and machine learning performance:
 
 1. **Water Quality Parameter Distributions:**
    - Dissolved Oxygen Distribution: [`results/figures/do_distribution.png`](file:///d:/FISH/results/figures/do_distribution.png)
@@ -523,5 +562,12 @@ The following figures illustrate the audited data distributions and cleaning ope
    - AT_RISK Percentage by Pond: [`results/figures/at_risk_percentage_by_pond.png`](file:///d:/FISH/results/figures/at_risk_percentage_by_pond.png)
    - Representative SAFE Window: [`results/figures/example_safe_event.png`](file:///d:/FISH/results/figures/example_safe_event.png)
    - Representative AT_RISK Window: [`results/figures/example_at_risk_event.png`](file:///d:/FISH/results/figures/example_at_risk_event.png)
-4. **End-to-End Pipeline Architecture:**
+4. **End-to-End Pipeline & ML Architecture:**
    - System Data Flow Diagram: [`results/figures/data_flow_diagram.png`](file:///d:/FISH/results/figures/data_flow_diagram.png)
+   - Phase 3 ML Pipeline Architecture: [`results/figures/ml_pipeline_diagram.png`](file:///d:/FISH/results/figures/ml_pipeline_diagram.png)
+5. **Model Evaluation Curves & Confusion Matrices:**
+   - ROC Curve Comparison: [`results/figures/roc_curve_comparison.png`](file:///d:/FISH/results/figures/roc_curve_comparison.png)
+   - Precision-Recall Curve Comparison: [`results/figures/pr_curve_comparison.png`](file:///d:/FISH/results/figures/pr_curve_comparison.png)
+   - Confusion Matrix (Logistic Regression): [`results/figures/confusion_logistic_regression.png`](file:///d:/FISH/results/figures/confusion_logistic_regression.png)
+   - Confusion Matrix (Random Forest): [`results/figures/confusion_random_forest.png`](file:///d:/FISH/results/figures/confusion_random_forest.png)
+   - Confusion Matrix (XGBoost): [`results/figures/confusion_xgboost.png`](file:///d:/FISH/results/figures/confusion_xgboost.png)

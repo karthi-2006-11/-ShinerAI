@@ -4,3 +4,7 @@ matplotlib
 openpyxl
 jupyterlab
 pytest
+scikit-learn
+xgboost
+joblib
+scipy

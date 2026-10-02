@@ -1,0 +1,121 @@
+# ShinerAI: Phase 3 Beginner's Guide to Machine Learning
+
+Welcome to Phase 3 of **ShinerAI**! If you are new to Artificial Intelligence and Machine Learning (AI/ML), this guide breaks down the core concepts used to train and evaluate our early-warning system in clear, intuitive terms.
+
+---
+
+## 1. What is X and what is y?
+
+In machine learning, mathematical notation is commonly used to describe data:
+- **$X$ (The Feature Matrix / Inputs):** This is the information the machine learning algorithm is given to learn from or make a prediction about. In ShinerAI, $X$ is a table containing recent sensor measurements: the pond's current Dissolved Oxygen (DO), pH, temperature, historical readings over the past 2 hours ($t-15\text{m}, t-30\text{m}, \dots, t-120\text{m}$), and the time of day.
+- **$y$ (The Target / Label / Output):** This is the outcome we want the model to predict. In ShinerAI, $y$ is binary ($0$ or $1$):
+  - $y = 0$ (`SAFE`): Dissolved oxygen remains healthy ($\ge 3.0\text{ mg/L}$) throughout the entire next 2 hours.
+  - $y = 1$ (`AT_RISK`): Dissolved oxygen drops below $3.0\text{ mg/L}$ at any point in the next 2 hours.
+
+---
+
+## 2. What is a Feature? What is a Target?
+
+- **Feature:** An individual measurable property or characteristic of a pond at prediction time $T$. For example, `current_do = 4.2 mg/L` and `do_t_minus_15 = 4.8 mg/L` are features.
+- **Target:** The ground-truth event that occurs in the future window $(T, T + 2\text{ hours}]$. In supervised learning, we give the model pairs of $(X, y)$ so it learns the statistical relationship connecting current conditions to future outcomes.
+
+---
+
+## 3. What is Classification?
+
+**Classification** is a category of machine learning where the computer's job is to assign an input example into one of a discrete set of categories (classes).
+- Because ShinerAI has exactly two categories (`SAFE` and `AT_RISK`), this is a **binary classification** task.
+- If we were trying to predict the exact numerical DO concentration 2 hours later (e.g., $2.4\text{ mg/L}$), that would be **regression**. We chose classification because fish farmers need an unequivocal decision rule: *"Should I turn on the paddlewheel aerators now, yes or no?"*
+
+---
+
+## 4. What does Training mean? What does Testing mean?
+
+- **Training:** The learning phase. The machine learning algorithm inspects thousands of historical pond examples where both the inputs ($X$) and the true future outcome ($y$) are known. It adjusts its internal mathematical parameters (coefficients or decision split thresholds) to minimize prediction errors.
+- **Testing:** The evaluation phase. We take a completely separate set of examples that the model was **never allowed to see during training**. We ask the model to predict the future risk based only on $X$, and then we compare its predictions against the true $y$ to measure real-world performance.
+
+---
+
+## 5. What is a Baseline?
+
+A **baseline** is a simple, intuitive benchmark model used to set the minimum standard of performance.
+- Any sophisticated machine learning model (like Random Forest or XGBoost) is only useful if it proves to be significantly better than a simple common-sense rule.
+- In ShinerAI, we evaluated two baselines:
+  1. **Majority Baseline:** A "naive" model that always predicts `SAFE (0)` for every pond, because 88% of the dataset is safe.
+  2. **Current-DO Baseline:** A simple rule of thumb: *"If current DO is below 4.2 mg/L, sound the alarm; otherwise do nothing."*
+
+---
+
+## 6. Why Can't We Randomly Split Time-Series Data?
+
+In standard tabular machine learning (like predicting house prices), textbooks often teach you to shuffle rows randomly using `train_test_split()`.
+**In environmental time series, randomly shuffling rows is a catastrophic error.**
+Here is why:
+- Pond sensors take readings every 15 minutes.
+- If row 100 (at 2:00 AM) is randomly put into the training set, and row 101 (at 2:15 AM) is put into the test set, row 100 and row 101 share almost identical water temperatures, pH, and historical readings.
+- The model would simply memorize the water condition at 2:00 AM to "predict" 2:15 AM.
+- This creates artificially inflated test scores that completely fail when deployed on tomorrow's unobserved data.
+
+---
+
+## 7. What is Data Leakage? What is a Purge Gap?
+
+- **Data Leakage:** When information from the future or from the test set accidentally leaks into the training process.
+- **The Purge Gap (Embargo):** Because our target label evaluates what happens over the **next 2 hours**, consider a training example recorded 15 minutes before the test period begins. Its target label looks 2 hours into the future—meaning it reads data that belongs to the test period!
+- To prevent this leakage, ShinerAI enforces a **2-hour purge gap**: we discard all training records within 2 hours of the split boundary. That way, the training labels strictly complete before the test set begins.
+
+---
+
+## 8. Why is Accuracy Misleading for Our Class Distribution?
+
+Our dataset has an imbalanced class distribution:
+- **SAFE (0):** 87.46% (36,101 rows)
+- **AT_RISK (1):** 12.54% (5,176 rows)
+
+If a lazy model simply outputs `SAFE` for 100% of all queries, its **Accuracy is 88.58%**!
+To a non-technical manager, an "88% accurate model" sounds impressive. But in reality:
+- It caught **0 out of 943 low-oxygen crises** (0% Recall).
+- Every single fish pond in danger suffocated without warning.
+This is why **Accuracy is the wrong metric** for early-warning systems.
+
+---
+
+## 9. What are Precision, Recall, and F1-Score?
+
+For an early-warning system:
+- **True Positive (TP):** The model warned of low DO, and low DO actually occurred. (Success: fish saved!)
+- **False Positive (FP):** The model warned of low DO, but the pond stayed healthy. (False alarm: aerator ran unnecessarily, wasting electricity).
+- **False Negative (FN):** The model said safe, but the pond crashed below 3.0 mg/L. (Missed crisis: severe hypoxia / fish mortality).
+- **True Negative (TN):** The model said safe, and the pond stayed safe. (Quiet night).
+
+From these definitions:
+- **Recall (Sensitivity):** $\frac{\text{TP}}{\text{TP} + \text{FN}}$. What percentage of all actual low-DO crises did our model catch? (High recall = few missed crises).
+- **Precision:** $\frac{\text{TP}}{\text{TP} + \text{FP}}$. When the alarm sounds, what percentage of the time is it real? (High precision = few false alarms).
+- **F1-Score:** The harmonic mean of Precision and Recall: $2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$.
+
+---
+
+## 10. What is PR-AUC? Why is it Our Primary Metric?
+
+- **ROC-AUC:** Measures the trade-off between True Positive Rate and False Positive Rate across all possible classification probability thresholds. While standard, ROC-AUC can look deceptively high on imbalanced datasets because the large number of True Negatives dilutes the False Positive Rate.
+- **PR-AUC (Precision-Recall Area Under Curve):** Plots Precision against Recall for all possible thresholds. In imbalanced early-warning problems, **PR-AUC is the gold standard** because it focuses entirely on the minority class (`AT_RISK`).
+  - A no-skill model achieves a PR-AUC equal to the positive rate: **0.1142**.
+  - ShinerAI's Random Forest and XGBoost models achieve PR-AUC of **0.74 to 0.76**—nearly **7 times higher than random chance**!
+
+---
+
+## 11. What is a Confusion Matrix?
+
+A confusion matrix is a simple $2 \times 2$ grid that displays the exact counts of True Negatives, False Positives, False Negatives, and True Positives.
+For our temporal test set (8,261 total examples, with 943 AT_RISK events):
+- **Random Forest:** Caught **718 crises** (76.1% recall) with only 643 false alarms across 8,261 monitoring hours.
+- **XGBoost:** Caught **748 crises** (79.3% recall) with 835 false alarms.
+- **Logistic Regression:** Caught **848 crises** (89.9% recall) but had 2,158 false alarms (overly aggressive alarm).
+
+---
+
+## 12. Why Did We Compare Logistic Regression, Random Forest, and XGBoost?
+
+1. **Logistic Regression:** A linear, transparent model. It draws a smooth linear boundary. It serves as our linear baseline.
+2. **Random Forest:** An ensemble of decision trees trained on random subsets of data and features. It naturally models non-linear relationships (e.g., rapid drops during early morning hours) and resists overfitting.
+3. **XGBoost (Extreme Gradient Boosting):** An advanced algorithm that builds trees sequentially, where each new tree specifically corrects the residual errors of prior trees. It is widely considered state-of-the-art for tabular and sensor data.
