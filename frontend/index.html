@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShinerAI — Early Warning System for Low Dissolved Oxygen</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="app-header" role="banner">
+        <div class="header-content container">
+            <div class="brand">
+                <div class="brand-badge">RESEARCH PROTOTYPE</div>
+                <h1 class="brand-title">ShinerAI</h1>
+                <p class="brand-subtitle">AI-Based Early Warning System for Low Dissolved Oxygen in Fish Farms</p>
+            </div>
+            <div class="header-status">
+                <div id="apiStatusBadge" class="status-badge status-checking" role="status" aria-live="polite">
+                    <span class="status-dot"></span>
+                    <span id="apiStatusText" class="status-text">Checking API...</span>
+                </div>
+                <div id="activeModelBadge" class="model-badge">Model: Loading...</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global API Error Banner (if offline) -->
+    <div id="apiErrorBanner" class="api-error-banner hidden" role="alert">
+        <div class="container banner-inner">
+            <span class="banner-icon">⚠️</span>
+            <span id="apiErrorBannerText">Unable to connect to ShinerAI backend. Please ensure the Flask server is running at http://127.0.0.1:5000.</span>
+            <button type="button" id="btnRetryConnection" class="btn-retry">Retry Connection</button>
+        </div>
+    </div>
+
+    <!-- Main Content Layout -->
+    <main class="main-container container" role="main">
+        <!-- Demo Scenario Selector -->
+        <section class="demo-section card" aria-labelledby="demo-heading">
+            <div class="demo-header">
+                <div>
+                    <h2 id="demo-heading" class="section-title">Demonstration Scenarios (Evaluated Test Cases)</h2>
+                    <p class="section-subtitle">Load real historical observations from the temporal holdout set to inspect model behavior. (Not live sensor streaming).</p>
+                </div>
+                <div class="demo-actions">
+                    <button type="button" id="btnDemoSafe" class="btn-demo btn-demo-safe">
+                        <span class="demo-tag">Scenario 1 (SAFE)</span>
+                        <strong>Daytime Recovery</strong>
+                        <span class="demo-desc">10:15 AM • Rising DO trajectory (2.92 → 5.40 mg/L)</span>
+                    </button>
+                    <button type="button" id="btnDemoAtRisk" class="btn-demo btn-demo-risk">
+                        <span class="demo-tag">Scenario 2 (AT_RISK)</span>
+                        <strong>Nocturnal Depletion</strong>
+                        <span class="demo-desc">03:30 AM • Falling DO trajectory (5.02 → 3.84 mg/L)</span>
+                    </button>
+                    <button type="button" id="btnClearInputs" class="btn-demo btn-demo-clear">
+                        <span>Reset Form</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Two-Column Workspace -->
+        <div class="workspace-grid">
+            <!-- Left Column: Pond Input & 2-Hour DO Trajectory Chart -->
+            <div class="column-left">
+                <!-- Input Panel -->
+                <section class="card input-card" aria-labelledby="input-heading">
+                    <div class="card-header">
+                        <h2 id="input-heading" class="card-title">Pond Telemetry Input</h2>
+                        <span class="card-caption">2-Hour Window Prior to Prediction Time T</span>
+                    </div>
+
+                    <!-- Client-Side Boundary/Validation Warning -->
+                    <div id="validationAlert" class="alert-box alert-warning hidden" role="alert">
+                        <div class="alert-icon">⚠️</div>
+                        <div class="alert-content">
+                            <strong id="validationAlertTitle">Operational Boundary Condition Violated</strong>
+                            <p id="validationAlertMessage"></p>
+                        </div>
+                    </div>
+
+                    <form id="pondInputForm" novalidate>
+                        <!-- Metadata Group -->
+                        <div class="form-group-grid">
+                            <div class="form-field">
+                                <label for="pondId">Pond Identifier</label>
+                                <input type="text" id="pondId" name="pond_id" value="ara2_0677080b" required>
+                                <span class="field-hint">e.g., ara2_0677080b</span>
+                            </div>
+                            <div class="form-field">
+                                <label for="predictionTimestamp">Prediction Timestamp (T)</label>
+                                <input type="text" id="predictionTimestamp" name="prediction_timestamp" value="2026-01-26T10:15:00" placeholder="YYYY-MM-DDTHH:MM:SS" required>
+                                <span class="field-hint">ISO format • Model derives time of day</span>
+                            </div>
+                        </div>
+
+                        <!-- Current DO (T) -->
+                        <div class="current-do-wrapper">
+                            <div class="form-field field-highlight">
+                                <label for="currentDo">
+                                    <strong>Current Dissolved Oxygen (T)</strong>
+                                    <span class="unit-badge">mg/L</span>
+                                </label>
+                                <input type="number" id="currentDo" name="current_do" step="0.01" min="0" max="25" value="5.40" required>
+                                <span class="field-hint">Must be &ge; 3.00 mg/L (hypoxia early warning boundary)</span>
+                            </div>
+                        </div>
+
+                        <!-- 8 Historical Lags -->
+                        <div class="lags-section">
+                            <label class="lags-section-title">
+                                Recent 2-Hour Historical DO Readings (15-Minute Intervals)
+                                <span class="unit-badge">mg/L</span>
+                            </label>
+                            <p class="lags-section-desc">Discrete historical sensor observations ending at current time T.</p>
+                            <div class="lags-grid">
+                                <div class="form-field">
+                                    <label for="do_t_minus_15">T - 15m</label>
+                                    <input type="number" id="do_t_minus_15" name="do_t_minus_15" step="0.01" min="0" max="25" value="5.15" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="do_t_minus_30">T - 30m</label>
+                                    <input type="number" id="do_t_minus_30" name="do_t_minus_30" step="0.01" min="0" max="25" value="4.87" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="do_t_minus_45">T - 45m</label>
+                                    <input type="number" id="do_t_minus_45" name="do_t_minus_45" step="0.01" min="0" max="25" value="4.36" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="do_t_minus_60">T - 60m</label>
+                                    <input type="number" id="do_t_minus_60" name="do_t_minus_60" step="0.01" min="0" max="25" value="4.21" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="do_t_minus_75">T - 75m</label>
+                                    <input type="number" id="do_t_minus_75" name="do_t_minus_75" step="0.01" min="0" max="25" value="3.89" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="do_t_minus_90">T - 90m</label>
+                                    <input type="number" id="do_t_minus_90" name="do_t_minus_90" step="0.01" min="0" max="25" value="3.72" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="do_t_minus_105">T - 105m</label>
+                                    <input type="number" id="do_t_minus_105" name="do_t_minus_105" step="0.01" min="0" max="25" value="3.23" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="do_t_minus_120">T - 120m</label>
+                                    <input type="number" id="do_t_minus_120" name="do_t_minus_120" step="0.01" min="0" max="25" value="2.92" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="submit" id="btnAnalyze" class="btn-primary">
+                                <span class="btn-text">Analyze Risk</span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- 2-Hour DO Trajectory Chart Card -->
+                <section class="card chart-card" aria-labelledby="chart-heading">
+                    <div class="card-header">
+                        <div>
+                            <h2 id="chart-heading" class="card-title">2-Hour DO Trajectory Visualization</h2>
+                            <span class="card-caption">Observed Dissolved Oxygen from T-120m to T (Current)</span>
+                        </div>
+                    </div>
+
+                    <div id="doChartContainer" class="chart-container">
+                        <!-- Responsive SVG chart generated dynamically by app.js -->
+                        <svg id="doChart" viewBox="0 0 620 260" class="do-svg-chart" role="img" aria-label="Dissolved oxygen trajectory graph over the recent 2 hours with 3.0 mg/L reference line">
+                            <!-- Injected by JavaScript -->
+                        </svg>
+                    </div>
+
+                    <div class="chart-footer">
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-line line-trajectory"></span> Observed DO Trajectory</span>
+                            <span class="legend-item"><span class="legend-line line-threshold"></span> 3.0 mg/L Reference Line</span>
+                        </div>
+                        <p id="chartThresholdNote" class="chart-note">
+                            <strong>Note:</strong> 3.0 mg/L is the provisional project threshold used for this research prediction task. It is not presented as a universal biological threshold for all aquatic species.
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Prediction Result & SHAP Explanation -->
+            <div class="column-right">
+                <!-- Prediction Result Card -->
+                <section id="predictionCard" class="card result-card" aria-labelledby="prediction-heading">
+                    <div class="card-header">
+                        <h2 id="prediction-heading" class="card-title">AI Risk Assessment</h2>
+                        <span class="card-caption">Forecast Horizon: Next 2 Hours</span>
+                    </div>
+
+                    <!-- Loading State for Prediction -->
+                    <div id="loadingPrediction" class="loading-state hidden">
+                        <div class="spinner"></div>
+                        <p class="loading-text">Analyzing DO history...</p>
+                    </div>
+
+                    <!-- Initial Ready State Placeholder -->
+                    <div id="placeholderPrediction" class="result-placeholder">
+                        <div class="placeholder-icon">📊</div>
+                        <h3>Ready for Analysis</h3>
+                        <p>Select a demonstration scenario above or enter custom pond DO history, then click <strong>"Analyze Risk"</strong>.</p>
+                    </div>
+
+                    <!-- Prediction Result Body -->
+                    <div id="resultContent" class="result-content hidden">
+                        <!-- Primary Status Banner -->
+                        <div id="riskBanner" class="risk-banner banner-safe">
+                            <div class="risk-badge-group">
+                                <span id="riskIcon" class="risk-icon">✓</span>
+                                <span id="riskLabel" class="risk-label">SAFE</span>
+                            </div>
+                            <div class="risk-probability-wrapper">
+                                <span class="prob-label">Estimated Risk Probability</span>
+                                <span id="riskProbabilityValue" class="prob-value">6.7%</span>
+                            </div>
+                        </div>
+
+                        <!-- Probability Visual Meter -->
+                        <div class="meter-section">
+                            <div class="meter-header">
+                                <span>0% Low Risk</span>
+                                <span class="threshold-marker-label">Decision Threshold: 50.0%</span>
+                                <span>100% High Risk</span>
+                            </div>
+                            <div class="meter-bar-track">
+                                <div id="riskMeterFill" class="meter-bar-fill" style="width: 6.7%;"></div>
+                                <div class="threshold-indicator" title="Decision Threshold (50.0%)"></div>
+                            </div>
+                            <p class="meter-explanation">
+                                <strong>Model-estimated probability of the AT_RISK class.</strong> This value reflects statistical model output given the 2-hour DO history, not absolute proof or fish mortality predictions.
+                            </p>
+                        </div>
+
+                        <!-- Metadata Summary Grid -->
+                        <div class="prediction-meta-grid">
+                            <div class="meta-item">
+                                <span class="meta-label">Current DO (T)</span>
+                                <span id="resCurrentDo" class="meta-val">5.40 mg/L</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Prediction Time</span>
+                                <span id="resTimestamp" class="meta-val">10:15</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Model Used</span>
+                                <span id="resModelUsed" class="meta-val">XGBoost</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Configuration</span>
+                                <span id="resConfig" class="meta-val">Config C — DO History Only</span>
+                            </div>
+                        </div>
+
+                        <!-- Operational Alert Message -->
+                        <div id="alertMessageBox" class="alert-message-box alert-box-safe">
+                            <span class="alert-msg-icon">ℹ️</span>
+                            <p id="alertMessageText" class="alert-msg-text">
+                                NORMAL: Pond expected to remain safe (&ge; 3.0 mg/L DO) over the next 2 hours.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Explanation Panel (Local SHAP) -->
+                <section id="explanationCard" class="card explanation-card" aria-labelledby="explain-heading">
+                    <div class="card-header">
+                        <div>
+                            <h2 id="explain-heading" class="card-title">Why did ShinerAI make this prediction?</h2>
+                            <span class="card-caption">Local SHAP Feature Attributions</span>
+                        </div>
+                    </div>
+
+                    <!-- Loading State for Explanation -->
+                    <div id="loadingExplanation" class="loading-state hidden">
+                        <div class="spinner"></div>
+                        <p class="loading-text">Generating explanation...</p>
+                    </div>
+
+                    <!-- Initial Explanation Placeholder -->
+                    <div id="placeholderExplanation" class="explanation-placeholder">
+                        <p class="placeholder-sub">Feature attributions will be computed after prediction.</p>
+                    </div>
+
+                    <!-- Explanation Content -->
+                    <div id="explanationContent" class="explanation-content hidden">
+                        <p class="explanation-lead">
+                            Feature attributions show how recent measurements shifted the risk score relative to baseline:
+                        </p>
+
+                        <!-- Feature Attributions Table -->
+                        <div class="table-responsive">
+                            <table class="shap-table" aria-label="Feature Contributions Table">
+                                <thead>
+                                    <tr>
+                                        <th>Predictor Feature</th>
+                                        <th>Observed Value</th>
+                                        <th>Attribution (SHAP)</th>
+                                        <th>Influence Direction</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="shapTableBody">
+                                    <!-- Injected by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Drivers Summary -->
+                        <div class="drivers-grid">
+                            <div class="driver-card driver-risk">
+                                <h4>Top Signals Pushing Toward AT_RISK</h4>
+                                <ul id="topRiskDriversList" class="drivers-list">
+                                    <li>None</li>
+                                </ul>
+                            </div>
+                            <div class="driver-card driver-safe">
+                                <h4>Top Signals Pushing Toward SAFE</h4>
+                                <ul id="topSafeDriversList" class="drivers-list">
+                                    <li>None</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Scientific Note -->
+                        <div class="scientific-note-box">
+                            <p id="shapDisclaimer" class="note-text">
+                                <strong>Scientific Note:</strong> SHAP values describe how model inputs contributed to this prediction. They indicate statistical model behavior, not biological causation. Historical inputs are discrete lag observations; no explicit rate-of-change derivative was engineered.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Global Feature Importance Section -->
+                <section class="card global-card" aria-labelledby="global-heading">
+                    <div class="card-header">
+                        <div>
+                            <h2 id="global-heading" class="card-title">Important Signals Observed in the Model</h2>
+                            <span class="card-caption">Global Feature Importance (Evaluated XGBoost Config C)</span>
+                        </div>
+                    </div>
+                    <div class="global-body">
+                        <p class="global-lead">
+                            Overall influence ranking across the entire evaluated holdout dataset:
+                        </p>
+                        <div id="globalImportanceChart" class="global-bars-list">
+                            <!-- Injected or statically rendered -->
+                        </div>
+                        <p class="global-disclaimer">
+                            <strong>Note:</strong> These features had the strongest influence on model predictions in the evaluated dataset. They describe empirical model dependencies, not biological causes of oxygen depletion.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Model Information Panel -->
+                <section class="card model-info-card" aria-labelledby="modelinfo-heading">
+                    <div class="card-header">
+                        <div>
+                            <h2 id="modelinfo-heading" class="card-title">Model Specifications & Evaluation Summary</h2>
+                            <span class="card-caption">Technical Benchmark from Frozen Phase 3</span>
+                        </div>
+                    </div>
+                    <div class="model-info-body">
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <span class="info-label">Current Model</span>
+                                <span id="infoModelName" class="info-value">XGBoost Classifier</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Active Feature Set</span>
+                                <span class="info-value">Config C — DO History Only (11 Predictors)</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Forecast Horizon</span>
+                                <span class="info-value">2 Hours Ahead</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Decision Threshold</span>
+                                <span class="info-value">0.50</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Temporal Holdout ROC-AUC</span>
+                                <span class="info-value">0.9458</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Temporal Holdout PR-AUC</span>
+                                <span class="info-value">0.7718</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Temporal Split Strategy</span>
+                                <span class="info-value">80/20 chronological holdout with 2-hour purge gap</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status</span>
+                                <span class="info-value">Current demonstration model</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Research Scope & Limitations Footer -->
+    <footer class="app-footer" role="contentinfo">
+        <div class="container footer-content">
+            <div class="footer-block">
+                <h3>Research Scope & Guardrails</h3>
+                <p>
+                    ShinerAI predicts impending low dissolved oxygen events (&lt; 3.0 mg/L within a 2-hour forecast horizon) based on recent discrete pond telemetry. 
+                    <strong>It does NOT predict fish disease, infections, or fish mortality.</strong> 
+                    The 3.0 mg/L threshold remains a provisional project threshold adopted for this research task and must not be interpreted as universally applicable to all aquatic species or operational environments.
+                </p>
+                <p>
+                    Local SHAP explanations represent mathematical attributions within the trained gradient-boosted decision tree; they do not establish biological causation. All evaluations reflect the specific sensor datasets collected during Phase 1–3.
+                </p>
+            </div>
+            <div class="footer-meta">
+                <span>ShinerAI Research Prototype • Phase 5: Dashboard & End-to-End Integration</span>
+                <span>GitHub: <a href="https://github.com/karthi-2006-11/-ShinerAI.git" target="_blank" rel="noopener noreferrer">karthi-2006-11/-ShinerAI</a></span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

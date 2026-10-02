@@ -22,18 +22,20 @@ The ShinerAI REST API provides early warning inference and explainability for co
 
 ## 2. API Endpoints
 
-### 2.1 Index Directory: `GET /`
-Provides API discovery, status, active model artifact, and available endpoints.
+### 2.1 Index Directory & Web Dashboard: `GET /` & `GET /dashboard`
+Provides user-facing web dashboard (when requested with `Accept: text/html` by a browser or via `GET /dashboard`) or JSON API service discovery metadata (when requested by API clients).
 
-#### Response (`200 OK`):
+#### JSON API Response (`200 OK`):
 ```json
 {
   "project": "ShinerAI",
   "title": "AI-Based Early Warning System for Low Dissolved Oxygen in Fish Farms",
   "status": "online",
-  "phase": "Phase 4 - Model Serving & Explainability",
+  "phase": "Phase 5 - Dashboard & User Interface",
   "active_model": "xgboost_config_c.joblib",
   "endpoints": {
+    "GET /": "Dashboard user interface (HTML) or API metadata (JSON).",
+    "GET /dashboard": "Dashboard user interface (HTML).",
     "GET /health": "Server health, model load status, and runtime environment.",
     "GET /model-info": "Model architecture, feature schema, decision threshold, and held-out test metrics.",
     "POST /predict": "Predict whether pond DO will drop below 3.0 mg/L within 2 hours.",

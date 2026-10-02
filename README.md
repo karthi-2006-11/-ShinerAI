@@ -63,7 +63,15 @@ By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fi
   - Beginner guide: [`PHASE_4_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_4_BEGINNER_GUIDE.md).
   - REST API specification: [`docs/API.md`](file:///d:/FISH/docs/API.md).
 
-- **Phase 5: Interactive Dashboard & UI** — **PENDING USER APPROVAL**
+- **Phase 5: Interactive Dashboard & UI + End-to-End Integration** — **COMPLETED**
+  - Developed a lightweight, accessible, and responsive web dashboard in `frontend/` using pure semantic HTML5, vanilla CSS3, and native JavaScript (ES6+).
+  - Flask backend seamlessly serves the static dashboard directly at `GET /` and `GET /dashboard` while maintaining standard REST API discovery endpoints.
+  - Implemented dynamic 2-hour DO trajectory visualization in pure SVG with a prominent $3.0\text{ mg/L}$ provisional hypoxia threshold reference line.
+  - Built-in demonstration scenarios (Daytime Recovery vs. Nocturnal Depletion) loaded directly from the evaluated temporal holdout set.
+  - Interactive prediction (`POST /predict`) and local SHAP explainability (`POST /explain`) with direction indicators (`↑ Toward AT_RISK`, `↓ Toward SAFE`).
+  - Automated test suite expanded to 76 tests with 100% pass rate.
+  - Detailed report: [`PHASE_5_REPORT.md`](file:///d:/FISH/PHASE_5_REPORT.md).
+  - Beginner guide: [`PHASE_5_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_5_BEGINNER_GUIDE.md).
 
 ## Dataset Health & Reconciliation Summary
 
@@ -290,15 +298,18 @@ python src/evaluate.py
 python src/explainability_pipeline.py
 ```
 
-### 6. Launch the Flask REST Backend API
+### 6. Launch the Flask REST Backend API & Web Dashboard
 ```powershell
-python -m backend.app
+.venv\Scripts\python.exe -m flask --app backend.app run
+# Or directly:
+.venv\Scripts\python.exe -m backend.app
 ```
+*Access the interactive dashboard in your browser at `http://127.0.0.1:5000/` or `http://127.0.0.1:5000/dashboard`.*  
 *(By default runs on `http://127.0.0.1:5000` serving `models/xgboost_config_c.joblib`)*
 
-### 7. Run the Full Automated Test Suite (59 Tests)
+### 7. Run the Full Automated Test Suite (76 Tests)
 ```powershell
-pytest -v
+.venv\Scripts\python.exe -m pytest -v
 ```
 
 ### 8. Launch JupyterLab

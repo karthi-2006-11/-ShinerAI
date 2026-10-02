@@ -17,7 +17,7 @@ from backend.validation import ValidationError, validate_prediction_payload
 
 def create_app(model_artifact_path: Optional[str] = None) -> Flask:
     """
-    Application factory for the ShinerAI REST API.
+    Application factory for the ShinerAI REST API and Dashboard.
 
     Parameters
     ----------
@@ -29,7 +29,8 @@ def create_app(model_artifact_path: Optional[str] = None) -> Flask:
     Flask
         Configured Flask application instance.
     """
-    app = Flask(__name__)
+    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+    app = Flask(__name__, static_folder=frontend_dir, static_url_path="")
     app.config["JSON_SORT_KEYS"] = False
 
     # Instantiate model and explainability services
@@ -54,7 +55,7 @@ def create_app(model_artifact_path: Optional[str] = None) -> Flask:
     def handle_not_found(err):
         return jsonify({
             "error": "NotFound",
-            "message": "The requested endpoint does not exist. Available: /, /health, /model-info, /predict, /explain.",
+            "message": "The requested endpoint does not exist. Available: /, /dashboard, /health, /model-info, /predict, /explain.",
         }), 404
 
     @app.errorhandler(405)
@@ -72,23 +73,33 @@ def create_app(model_artifact_path: Optional[str] = None) -> Flask:
         }), 500
 
     # --------------------------------------------------------------------------
-    # API Routes
+    # API Routes & Dashboard Serving
     # --------------------------------------------------------------------------
     @app.route("/", methods=["GET"])
     def index():
+        # If client explicitly requests HTML (such as a web browser), serve the dashboard
+        if "text/html" in request.headers.get("Accept", ""):
+            return app.send_static_file("index.html")
+
         return jsonify({
             "project": "ShinerAI",
             "title": "AI-Based Early Warning System for Low Dissolved Oxygen in Fish Farms",
             "status": "online",
-            "phase": "Phase 4 - Model Serving & Explainability",
+            "phase": "Phase 5 - Dashboard & User Interface",
             "active_model": model_service.artifact_name,
             "endpoints": {
+                "GET /": "Dashboard user interface (HTML) or API metadata (JSON).",
+                "GET /dashboard": "Dashboard user interface (HTML).",
                 "GET /health": "Server health, model load status, and runtime environment.",
                 "GET /model-info": "Model architecture, feature schema, decision threshold, and held-out test metrics.",
                 "POST /predict": "Predict whether pond DO will drop below 3.0 mg/L within 2 hours.",
                 "POST /explain": "Generate prediction along with local SHAP feature attributions.",
             },
         }), 200
+
+    @app.route("/dashboard", methods=["GET"])
+    def dashboard():
+        return app.send_static_file("index.html")
 
     @app.route("/health", methods=["GET"])
     def health():
