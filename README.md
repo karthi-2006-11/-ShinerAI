@@ -152,9 +152,9 @@ fish-farm-early-warning/
 │       └── ml_ready_dataset.csv     # 41,277 supervised learning examples (37 columns)
 │
 ├── models/
-│   ├── logistic_regression.joblib   # Scaled Logistic Regression candidate
-│   ├── random_forest.joblib         # Random Forest candidate (recommended)
-│   ├── xgboost.joblib               # XGBoost candidate (high-recall alternative)
+│   ├── logistic_regression.joblib   # Linear high-recall candidate
+│   ├── random_forest.joblib         # Random Forest candidate (high specificity & F1)
+│   ├── xgboost.joblib               # XGBoost candidate (highest PR-AUC & sensitivity)
 │   └── model_metadata.json          # Complete hyperparameters, metadata & metrics
 │
 ├── notebooks/
@@ -184,6 +184,7 @@ fish-farm-early-warning/
 │   │   └── at_risk_percentage_by_pond.png
 │   │
 │   └── reports/                     # Tabular CSV and JSON reports
+│       ├── final_model_selection.csv# Neutral model selection & trade-off matrix
 │       ├── model_comparison.csv     # Phase 3 model benchmark results across configurations
 │       ├── model_comparison.json    # Machine-readable model benchmarks
 │       ├── per_pond_model_performance.csv # Pond-by-pond performance breakdown
@@ -266,4 +267,4 @@ Navigate to `notebooks/01_dataset_audit.ipynb` to view the interactive audit.
 1. **Read-Only Raw Telemetry:** Raw files in `data/raw/csv/` are strictly read-only and never modified.
 2. **Zero Forward Leakage:** Feature matrices never include future observations ($t > T$).
 3. **No Synthetic Data:** Missing temporal gaps are partitioned into new segments rather than interpolated with synthetic numbers.
-4. **Physiological Caveat:** The 3.0 mg/L threshold is provisional pending species-specific biological validation; ShinerAI forecasts water oxygen depletion, not biological diseases.
+4. **Scope & Physiological Caveat:** The 3.0 mg/L threshold is provisional pending species-specific biological validation; ShinerAI forecasts impending water oxygen depletion events ($\text{DO} < 3.0\text{ mg/L}$ within 2 hours), not fish disease or fish mortality.

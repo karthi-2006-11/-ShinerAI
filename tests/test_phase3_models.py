@@ -84,6 +84,7 @@ def test_evaluation_reports_and_figures_exist():
         os.path.join("results", "reports", "per_pond_model_performance.csv"),
         os.path.join("results", "reports", "group_kfold_performance.csv"),
         os.path.join("results", "reports", "temporal_split_accounting.csv"),
+        os.path.join("results", "reports", "final_model_selection.csv"),
     ]
     for r in expected_reports:
         assert os.path.exists(r), f"Missing report: {r}"

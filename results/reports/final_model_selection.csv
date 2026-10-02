@@ -1,0 +1,12 @@
+model,feature_config,pr_auc,roc_auc,precision,recall,f1,specificity,temporal_holdout,group_kfold_pr_auc,group_kfold_f1,notes
+XGBoost,Config C (DO History Only),0.7574,0.9162,0.5186,0.7975,0.6285,0.9046,Yes (80/20 with 2h purge),N/A,N/A,Highest overall PR-AUC (0.7574). Catches 79.8% of low-DO events with 698 false positives.
+Random Forest,Config C (DO History Only),0.7471,0.9144,0.5859,0.7561,0.6602,0.9311,Yes (80/20 with 2h purge),N/A,N/A,"Highest F1 (0.6602), highest precision (0.5859), lowest false positives (504) among ML models at default threshold."
+Random Forest,Config B (Current + History),0.742,0.9169,0.5276,0.7614,0.6233,0.9121,Yes (80/20 with 2h purge),0.7086 +/- 0.0456,0.6326 +/- 0.0426,"Balanced multi-sensor performance (643 FPs, 225 FNs). Proven stability on unseen ponds in GroupKFold."
+XGBoost,Config B (Current + History),0.7353,0.9171,0.4725,0.7932,0.5922,0.8859,Yes (80/20 with 2h purge),0.7183 +/- 0.0467,0.6028 +/- 0.0533,Strong recall (79.3%) and highest GroupKFold PR-AUC (0.7183); trade-off is higher false positive count (835).
+XGBoost,Config A (Current Only),0.7317,0.915,0.4537,0.8102,0.5817,0.8743,Yes (80/20 with 2h purge),N/A,N/A,"High recall (81.0%) without historical lags, but lower precision (920 FPs)."
+Random Forest,Config A (Current Only),0.7107,0.9116,0.5149,0.7709,0.6174,0.9064,Yes (80/20 with 2h purge),N/A,N/A,Competitive current-only baseline; adding history provides +0.0313 to +0.0364 PR-AUC lift.
+Logistic Regression,Config B (Current + History),0.6763,0.9078,0.2821,0.8993,0.4295,0.7051,Yes (80/20 with 2h purge),0.5950 +/- 0.1175,0.4589 +/- 0.0716,"High-sensitivity linear model (89.9% recall, 95 FNs), but low precision causes 2,158 false alarms."
+Logistic Regression,Config C (DO History Only),0.655,0.9093,0.3051,0.894,0.4549,0.7376,Yes (80/20 with 2h purge),N/A,N/A,"Linear model on DO lags alone; catches 89.4% of events with 1,920 false alarms."
+Logistic Regression,Config A (Current Only),0.6019,0.8994,0.2802,0.9003,0.4274,0.702,Yes (80/20 with 2h purge),N/A,N/A,"Linear current-only model; 2,181 false alarms."
+Current-DO Baseline (DO <= 4.2),current_do only,0.6149,0.9024,0.3019,0.8961,0.4516,0.733,Yes (80/20 with 2h purge),N/A,N/A,"Training-derived heuristic (threshold 4.2 mg/L optimized for training F1). In calibrated 1D ranking, achieves 0.6149 PR-AUC."
+Majority Baseline,None,0.1142,0.5,0.0,0.0,0.0,1.0,Yes (80/20 with 2h purge),N/A,N/A,Always predicts SAFE. Illustrates why accuracy (0.8858) is misleading when recall is zero.

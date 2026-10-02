@@ -500,17 +500,23 @@ In keeping with rigorous scientific integrity, several real-world dataset limita
 ## 40. Phase 3 Summary: Machine Learning Training & Evaluation
 **Objective:** Train, evaluate, and benchmark classical machine learning models for 2-hour low-DO early warning using strictly leak-free validation regimes.
 
+**Target Scope Definition:**  
+The model predicts **impending low-dissolved-oxygen events** ($\text{DO} < 3.0\text{ mg/L}$ within the next 2 hours given current $\text{DO} \ge 3.0\text{ mg/L}$).  
+*The project predicts water oxygen depletion dynamics; it does not directly predict fish disease or fish mortality.*
+
 ### 1. Methodology & Leakage Prevention:
 - **Feature Configurations:**
   - **Config A (Current Only, 5 features):** `current_do`, `current_ph`, `current_temperature`, `hour_of_day`, `minute_of_day`.
   - **Config B (Current + Full History, 29 features):** Config A + 8 DO lags ($t-15\text{m} \dots t-120\text{m}$) + 8 pH lags + 8 Temp lags.
   - **Config C (DO History Only, 11 features):** `current_do`, `hour_of_day`, `minute_of_day` + 8 DO lags.
-  - *(Redundant features `do_t`, `ph_t`, `temp_t` and non-predictors were explicitly omitted).*
+  - *(Features consist of discrete historical lag observations; no explicit derivative or rate feature was engineered. Redundant features `do_t`, `ph_t`, `temp_t` and non-predictors were explicitly omitted).*
+- **Provenance of 4.2 mg/L Heuristic Baseline:**
+  - Derived strictly using training data only (Option B). A discrete grid search across threshold values $th \in [3.0, 6.0]$ in increments of $0.1\text{ mg/L}$ on the training partition ($N = 32,908$) maximized training F1-score ($th = 4.20\text{ mg/L}$, train F1 = 0.5940). Zero test-set data was used to select this threshold.
 - **Primary Evaluation (Temporal Holdout):**
   - Evaluated chronologically per pond: earlier 80% of time for training (32,908 examples), later 20% of time for testing (8,261 examples).
   - **2-Hour Purge Gap:** Purged 108 boundary observations whose future 2-hour target window crossed into the test period, guaranteeing zero label leakage.
-- **Secondary Evaluation (Unseen-Pond Generalization):**
-  - 5-Fold GroupKFold cross-validation across all 17 ponds ensuring models were evaluated strictly on ponds excluded from training.
+- **Secondary Evaluation (Held-Out Pond Generalization):**
+  - 5-Fold GroupKFold cross-validation across all 17 ponds ensuring models were evaluated strictly on ponds excluded from the training partition.
 - **Imbalance Handling:**
   - Applied algorithmic sample weighting ($\text{scale\_pos\_weight} = 6.80$, `class_weight='balanced'`) based exclusively on the training partition without synthetic oversampling.
 
@@ -530,10 +536,15 @@ In keeping with rigorous scientific integrity, several real-world dataset limita
 | **Random Forest** | Config C (DO History Only) | **0.7471** | **0.9144** | **0.6602** | **0.7561** | **0.5859** | **0.9311** | **0.9111** |
 | **XGBoost** | Config C (DO History Only) | **0.7574** | **0.9162** | **0.6285** | **0.7975** | **0.5186** | **0.9046** | **0.8924** |
 
-### 3. Key Scientific Conclusions:
-1. **Value of Temporal History:** Adding 2-hour lag history improved PR-AUC by +0.074 for Logistic Regression, +0.036 for Random Forest, and +0.026 for XGBoost.
-2. **Generalization Across Unseen Ponds:** 5-Fold GroupKFold demonstrated stable cross-pond generalization (Random Forest PR-AUC: $0.7086 \pm 0.0456$; XGBoost PR-AUC: $0.7183 \pm 0.0467$).
-3. **Selected Candidate Model:** **Random Forest** is recommended as the primary candidate for Phase 4 deployment due to superior Specificity (91.2%), highest F1 (0.6233–0.6602), and lowest false alarm burden on farm operations, with **XGBoost** serving as an alternative where maximum Recall is prioritized.
+### 3. Key Scientific Conclusions & Neutral Model Selection:
+1. **Value of Temporal History:** A consistent improvement was observed across the three tested model families when recent temporal trajectory of DO was included (+0.074 PR-AUC for Logistic Regression, +0.036 for Random Forest, and +0.026 for XGBoost over Config A).
+2. **Signal in Config C:** For both Random Forest and XGBoost, the DO-history-only configuration achieved PR-AUC at least as high as the full-history configuration in the current experiment. Within this dataset and tested feature configuration, recent DO history carried the strongest predictive signal.
+3. **Generalization to Held-Out Ponds:** 5-Fold GroupKFold cross-validation provided evidence of generalization to held-out ponds within this dataset (Random Forest mean PR-AUC: $0.7086 \pm 0.0456$; XGBoost mean PR-AUC: $0.7183 \pm 0.0467$). The models retained predictive performance when evaluated on ponds excluded from training.
+4. **Objective Model Selection & Trade-offs:** Rather than a single universal winner, model selection depends on the stated early-warning objective:
+   - **XGBoost Config C:** Achieves highest overall PR-AUC (**0.7574**), catching 79.8% of low-DO events with 698 false alarms.
+   - **Random Forest Config C:** Achieves highest F1 (**0.6602**), highest precision (**58.59%**), and highest specificity (**93.11%**) at default threshold ($p=0.50$), minimizing false alarms to 504.
+   - **Logistic Regression Config B:** Provides a high-recall linear alternative (**89.93% recall**, catching 848 events), but at the cost of 2,158 false alarms.
+   - See formal trade-off matrix in [`results/reports/final_model_selection.csv`](file:///d:/FISH/results/reports/final_model_selection.csv).
 
 ---
 
