@@ -198,8 +198,8 @@ To make ShinerAI feel deeply connected to aquaculture while maintaining strict s
 
 3. **Ensuring 100% Text Readability (WCAG Compliance):**  
    - Background canvas has `pointer-events: none` and `aria-hidden="true"` so it never blocks clicks or interferes with screen readers.
-   - All dashboard cards use **glassmorphism** with 94% white opacity (`rgba(255, 255, 255, 0.94)`) and a `backdrop-filter: blur(14px)`.
-   - Dark primary text (`#0f172a`) on the cards exceeds WCAG AAA contrast requirements, while swimming fish remain clearly visible in the negative spaces and margins around the cards.
+   - All dashboard cards use **genuine glassmorphism** with a refined translucent white/cyan gradient (`rgba(255, 255, 255, 0.22)` to `0.15`), `backdrop-filter: blur(16px) saturate(130%)`, and subtle white inner borders (`rgba(255, 255, 255, 0.30)`).
+   - Deep ink primary text (`#0b1523`) with soft white micro-shadows guarantees crisp, high-contrast readability across all cards, allowing goldfish, swaying plants, and rising bubbles to remain clearly visible *through* the cards without visual clutter.
    - Automatic CPU throttling: when you switch browser tabs, the Page Visibility API (`document.hidden`) pauses the render loop, reducing battery and CPU usage to zero!
 
 ---
