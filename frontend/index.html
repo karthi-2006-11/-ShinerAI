@@ -241,9 +241,55 @@
                         </p>
                     </div>
                 </section>
+
+                <!-- Row 4 Left: Model Specifications & Evaluation Summary -->
+                <section class="card model-info-card order-model" aria-labelledby="modelinfo-heading">
+                    <div class="card-header">
+                        <div>
+                            <h2 id="modelinfo-heading" class="card-title">Model Specifications & Evaluation Summary</h2>
+                            <span class="card-caption">Technical Benchmark from Frozen Phase 3</span>
+                        </div>
+                    </div>
+                    <div class="model-info-body">
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <span class="info-label">Current Model</span>
+                                <span id="infoModelName" class="info-value">XGBoost Classifier</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Active Feature Set</span>
+                                <span class="info-value">Config C — DO History Only (11 Predictors)</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Forecast Horizon</span>
+                                <span class="info-value">2 Hours Ahead</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Decision Threshold</span>
+                                <span class="info-value">0.50</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Temporal Holdout ROC-AUC</span>
+                                <span id="infoRocAuc" class="info-value">0.9162</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Temporal Holdout PR-AUC</span>
+                                <span id="infoPrAuc" class="info-value">0.7574</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Temporal Split Strategy</span>
+                                <span class="info-value">80/20 chronological holdout with 2-hour purge gap</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status</span>
+                                <span class="info-value">Current demonstration model</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            <!-- Right Column: AI Risk Assessment -> Local SHAP -> Model Specifications -->
+            <!-- Right Column: AI Risk Assessment -> Local SHAP Explanation -->
             <div class="dashboard-column column-right">
                 <!-- Row 1 Right: AI Risk Assessment -->
                 <section id="predictionCard" class="card result-card order-risk" aria-labelledby="prediction-heading">
@@ -389,52 +435,6 @@
                             <p id="shapDisclaimer" class="note-text">
                                 <strong>Scientific Note:</strong> SHAP values describe how model inputs contributed to this prediction. They indicate statistical model behavior, not biological causation. Historical inputs are discrete lag observations; no explicit rate-of-change derivative was engineered.
                             </p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Row 3 Right: Model Specifications & Evaluation Summary -->
-                <section class="card model-info-card order-model" aria-labelledby="modelinfo-heading">
-                    <div class="card-header">
-                        <div>
-                            <h2 id="modelinfo-heading" class="card-title">Model Specifications & Evaluation Summary</h2>
-                            <span class="card-caption">Technical Benchmark from Frozen Phase 3</span>
-                        </div>
-                    </div>
-                    <div class="model-info-body">
-                        <div class="info-grid">
-                            <div class="info-row">
-                                <span class="info-label">Current Model</span>
-                                <span id="infoModelName" class="info-value">XGBoost Classifier</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Active Feature Set</span>
-                                <span class="info-value">Config C — DO History Only (11 Predictors)</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Forecast Horizon</span>
-                                <span class="info-value">2 Hours Ahead</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Decision Threshold</span>
-                                <span class="info-value">0.50</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Temporal Holdout ROC-AUC</span>
-                                <span id="infoRocAuc" class="info-value">0.9162</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Temporal Holdout PR-AUC</span>
-                                <span id="infoPrAuc" class="info-value">0.7574</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Temporal Split Strategy</span>
-                                <span class="info-value">80/20 chronological holdout with 2-hour purge gap</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Status</span>
-                                <span class="info-value">Current demonstration model</span>
-                            </div>
                         </div>
                     </div>
                 </section>

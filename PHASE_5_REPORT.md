@@ -62,8 +62,11 @@ The dashboard layout features a 2-column responsive workspace that gracefully ad
 |    - Observed DO line (T-120m -> T)                        |    - Direction Badges      |
 |    - Horizontal 3.0 mg/L Reference Line (Dashed)           |    - Top Risk & Safe Driver|
 |                                                            |                            |
-| 3. Global Feature Importance Signals                       | 3. Model Specifications    |
-|    - Ranked XGBoost Config C SHAP bars                     |    - Technical Benchmarks  |
+| 3. Global Feature Importance Signals                       |                            |
+|    - Ranked XGBoost Config C SHAP bars                     |                            |
+|                                                            |                            |
+| 4. Model Specifications & Evaluation Summary               |                            |
+|    - Technical Benchmark from Frozen Phase 3               |                            |
 +------------------------------------------------------------+----------------------------+
 | RESEARCH SCOPE & GUARDRAILS FOOTER:                                                     |
 | Predicts water hypoxia events (< 3.0 mg/L in 2h). Does NOT predict fish disease/death.  |
