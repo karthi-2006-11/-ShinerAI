@@ -554,13 +554,17 @@ The model predicts **impending low-dissolved-oxygen events** ($\text{DO} < 3.0\t
 
 Phase 4 transitioned the frozen Phase 3 Machine Learning models into an interpretable, operational software service:
 
+> [!NOTE]
+> **Model Artifact Provenance:**  
+> Config C model artifacts were reproduced using the frozen Phase 3 training procedure solely to create dedicated explainability/API artifacts; no model architecture, dataset, split, feature set, or training procedure was changed.
+
 ### 1. Model Explainability Pipeline (SHAP TreeExplainer):
 - **Global Feature Importance:** Evaluated on 1,000 stratified held-out test observations for both **XGBoost Config C** and **Random Forest Config C**.
   - `current_do` ranked #1 as the primary baseline determinant across both architectures (XGB mean |SHAP|: 1.3896; RF mean |SHAP|: 0.1049).
-  - Diurnal cycle markers (`minute_of_day`, `hour_of_day`) ranked #2 and #3, capturing photosynthetic versus respiratory phases.
-  - Recent historical lags (`do_t_minus_15`, `do_t_minus_30`) ranked #4 and #5, providing trajectory trend signals.
+  - Diurnal cycle markers (`minute_of_day`, `hour_of_day`) ranked #2 and #3, encoding time-of-day patterns observed in the dataset.
+  - Recent historical lags (`do_t_minus_15`, `do_t_minus_30`) ranked #4 and #5; `do_t_minus_15` represents the DO level 15 minutes before prediction and, together with current DO, contributes information about the recent temporal trajectory.
 - **Local Instance Explanations:**
-  - Deconstructed individual predictions for representative case studies: Daytime Photosynthetic Recovery (SAFE, risk probability 6.67%) and Nocturnal Respiration Depletion (AT_RISK, risk probability 93.41%).
+  - Deconstructed individual predictions for representative case studies: **SAFE Case Study — Rising DO During Daytime** (SAFE, risk probability 6.67%) and **AT_RISK Case Study — Declining DO During Nighttime** (AT_RISK, risk probability 93.41%).
   - Produced 6 publication-grade figures and 4 structured reports in `results/figures/explainability/` and `results/reports/explainability/`.
 - **Scientific & Causal Guardrail:**
   - Feature attributions represent statistical associations within this dataset and do not prove biological causality.
@@ -574,8 +578,8 @@ Phase 4 transitioned the frozen Phase 3 Machine Learning models into an interpre
   - `GET /model-info`: Expected 11 features, test metrics, operational trade-off guidance, scientific scope.
   - `POST /predict`: Real-time risk probability, predicted label (`SAFE` / `AT_RISK`), binary prediction, warning flag, alert text.
   - `POST /explain`: Real-time prediction plus local SHAP feature contributions, base value, top risk drivers, top safe drivers.
-- **Strict Boundary & Input Enforcement:** Rejects `current_do < 3.0 mg/L` with HTTP `400 Bad Request` (`status: ALREADY_LOW_DO`), enforces ISO 8601 timestamps, validates all 8 historical lags, and supports lag aliases (`do_t-15m`).
-- **Model Configurability:** Serves `models/xgboost_config_c.joblib` by default (highest PR-AUC: 0.7574, Recall: 79.75%), seamlessly switchable to `models/random_forest_config_c.joblib` (highest Specificity: 93.11%, lowest false alarms) via `MODEL_ARTIFACT_PATH`.
+- **Strict Boundary & Input Enforcement:** Rejects `current_do < 3.0 mg/L` with HTTP `400 Bad Request` (`status: ALREADY_LOW_DO`), enforces ISO 8601 timestamps, validates all 8 historical lags, and specifies canonical public input naming (`do_t_minus_15` through `do_t_minus_120`, with internal alias support).
+- **Model Configurability:** Serves `models/xgboost_config_c.joblib` by default (highest PR-AUC among tested models: 0.7574, highest recall among Config C tree models: 79.75%), seamlessly switchable to `models/random_forest_config_c.joblib` (highest Specificity: 93.11%, producing 194 fewer false positives than XGBoost Config C at the default threshold; this could reduce unnecessary interventions in a deployment where alerts trigger aeration) via `MODEL_ARTIFACT_PATH`.
 
 ### 3. Automated Verification:
 - **59 total automated tests** passing with 100% success rate (32 legacy tests from Phases 1–3 + 27 new tests in `tests/test_phase4_api.py` and `tests/test_phase4_explainability.py`).

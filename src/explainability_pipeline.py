@@ -129,8 +129,8 @@ def run_explainability_pipeline():
 
     # 4. Local Explanations for Representative Examples
     print("\n--- Computing Local Explanations ---")
-    safe_idx = 24       # Genuine SAFE example (daytime photosynthetic recovery)
-    at_risk_idx = 12    # Genuine AT_RISK example (nocturnal respiration depletion)
+    safe_idx = 24       # Genuine SAFE example (rising DO during daytime)
+    at_risk_idx = 12    # Genuine AT_RISK example (declining DO during nighttime)
 
     cases = [
         {"name": "safe", "index": safe_idx, "ground_truth": "SAFE (0)"},
@@ -280,7 +280,11 @@ def _generate_explainability_report(reports_dir, df_xgb, df_rf, local_data):
 This analysis interprets the decision behavior of the two leading tree-based models on **Config C (DO History Only, 11 features)** using **SHAP (SHapley Additive exPlanations) TreeExplainer**:
 - **Global Feature Importance:** Measures the mean absolute contribution of each feature across 1,000 held-out test set observations.
 - **Local Explanations:** Deconstructs specific individual predictions into positive contributions (pushing risk toward `AT_RISK`) and negative contributions (pushing risk toward `SAFE`).
-- **Representative Case Studies:** Examines one daytime photosynthetic recovery event (SAFE) and one nocturnal respiration depletion event (AT_RISK).
+- **Representative Case Studies:** Examines one daytime rising DO event (SAFE) and one nighttime declining DO event (AT_RISK).
+
+> [!NOTE]
+> **Model Artifact Provenance:**  
+> Config C model artifacts were reproduced using the frozen Phase 3 training procedure solely to create dedicated explainability/API artifacts; no model architecture, dataset, split, feature set, or training procedure was changed.
 
 > [!IMPORTANT]
 > **Scientific & Causal Guardrail:**  
@@ -295,7 +299,16 @@ This analysis interprets the decision behavior of the two leading tree-based mod
 |:---:|:---|:---:|:---|
 """
     for idx, row in df_xgb.iterrows():
-        content += f"| {idx+1} | `{row['feature']}` | {row['mean_abs_shap']:.4f} | Primary trajectory feature |\n"
+        feat = row['feature']
+        if feat == 'minute_of_day':
+            role = "Encodes time-of-day patterns observed in the dataset"
+        elif feat == 'do_t_minus_15':
+            role = "Represents DO 15 min prior; contributes to trajectory"
+        elif feat == 'current_do':
+            role = "Primary baseline level at prediction time T"
+        else:
+            role = "Historical trajectory predictor"
+        content += f"| {idx+1} | `{feat}` | {row['mean_abs_shap']:.4f} | {role} |\n"
 
     content += """
 ### Random Forest Config C (11 Features, Evaluated on Held-Out Test Set):
@@ -303,30 +316,39 @@ This analysis interprets the decision behavior of the two leading tree-based mod
 |:---:|:---|:---:|:---|
 """
     for idx, row in df_rf.iterrows():
-        content += f"| {idx+1} | `{row['feature']}` | {row['mean_abs_shap']:.4f} | Primary trajectory feature |\n"
+        feat = row['feature']
+        if feat == 'minute_of_day':
+            role = "Encodes time-of-day patterns observed in the dataset"
+        elif feat == 'do_t_minus_15':
+            role = "Represents DO 15 min prior; contributes to trajectory"
+        elif feat == 'current_do':
+            role = "Primary baseline level at prediction time T"
+        else:
+            role = "Historical trajectory predictor"
+        content += f"| {idx+1} | `{feat}` | {row['mean_abs_shap']:.4f} | {role} |\n"
 
     content += """
 ---
 
 ## 3. Case Studies: Local Prediction Deconstructions
 
-### Case 1: Photosynthetic Recovery Event (Ground Truth: SAFE)
+### SAFE Case Study — Rising DO During Daytime (Ground Truth: SAFE)
 - **Pond:** `{safe_pond}` | **Timestamp:** `{safe_ts}`
 - **Current DO:** `{safe_do:.2f} mg/L`
 - **Model Output:** 
   - XGBoost: Risk Probability = `{xgb_safe_prob:.2%}` (`{xgb_safe_label}`)
   - Random Forest: Risk Probability = `{rf_safe_prob:.2%}` (`{rf_safe_label}`)
 - **Interpretation:**  
-  Although DO had been at 2.92 mg/L 2 hours prior, the subsequent lags increased monotonically (3.23 -> 3.72 -> 4.21 -> 5.40 mg/L) alongside morning daylight hours (`hour_of_day = 10`). The model recognized this ascending trajectory and correctly drove risk contributions strongly negative (toward `SAFE`).
+  Although DO had been at 2.92 mg/L 2 hours prior, the subsequent lags increased monotonically (3.23 -> 3.72 -> 4.21 -> 5.40 mg/L) alongside daytime hours (`hour_of_day = 10`). The model recognized this ascending trajectory and correctly drove risk contributions strongly negative (toward `SAFE`).
 
-### Case 2: Nocturnal Respiration Depletion Event (Ground Truth: AT_RISK)
+### AT_RISK Case Study — Declining DO During Nighttime (Ground Truth: AT_RISK)
 - **Pond:** `{at_risk_pond}` | **Timestamp:** `{at_risk_ts}`
 - **Current DO:** `{at_risk_do:.2f} mg/L`
 - **Model Output:** 
   - XGBoost: Risk Probability = `{xgb_at_risk_prob:.2%}` (`{xgb_at_risk_label}`)
   - Random Forest: Risk Probability = `{rf_at_risk_prob:.2%}` (`{rf_at_risk_label}`)
 - **Interpretation:**  
-  Although current DO remained above the 3.0 threshold at 3.84 mg/L, the recent trajectory showed a steady drop from 5.02 mg/L over 2 hours during pre-dawn hours (`hour_of_day = 3`). The model recognized the steep decline and drove positive SHAP contributions strongly toward `AT_RISK`, providing the critical 2-hour early warning.
+  Although current DO remained above the 3.0 threshold at 3.84 mg/L, the recent trajectory showed a steady drop from 5.02 mg/L over 2 hours during nighttime hours (`hour_of_day = 3`). The model recognized the steep decline and drove positive SHAP contributions strongly toward `AT_RISK`, providing the critical 2-hour early warning.
 
 ---
 

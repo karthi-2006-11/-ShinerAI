@@ -22,10 +22,14 @@ The implementation is verified with **59 automated unit and integration tests** 
 
 ## 2. Model Explainability Pipeline
 
-### 2.1 Methodology
+### 2.1 Methodology & Artifact Provenance
 Explainability was conducted on the two top-performing tree-based models on **Config C (DO History Only, 11 features)**:
 - **XGBoost Config C** (Test PR-AUC: 0.7574, Recall: 79.75%, Precision: 51.86%, Specificity: 90.46%)
 - **Random Forest Config C** (Test PR-AUC: 0.7471, Recall: 75.61%, Precision: 58.59%, Specificity: 93.11%)
+
+> [!NOTE]
+> **Model Artifact Provenance:**  
+> Config C model artifacts were reproduced using the frozen Phase 3 training procedure solely to create dedicated explainability/API artifacts; no model architecture, dataset, split, feature set, or training procedure was changed.
 
 Using `shap.TreeExplainer`, feature attributions are computed on the probability scale (Random Forest) and log-odds margin (XGBoost), measuring the exact contribution of each predictor toward or against the `AT_RISK` event.
 
@@ -35,10 +39,10 @@ Evaluated across 1,000 stratified observations from the held-out temporal test s
 | Rank | Feature | XGBoost Mean \|SHAP\| | Random Forest Mean \|SHAP\| | Operational Role |
 |:---:|:---|:---:|:---:|:---|
 | 1 | `current_do` | **1.3896** | **0.1049** | Primary baseline level at prediction time $T$. |
-| 2 | `minute_of_day` | **0.5388** | 0.0485 | Diurnal cycle marker (diurnal photosynthetic vs respiratory phase). |
+| 2 | `minute_of_day` | **0.5388** | 0.0485 | Encodes time-of-day patterns observed in the dataset. |
 | 3 | `hour_of_day` | 0.2549 | 0.0340 | Coarse temporal diurnal indicator. |
 | 4 | `do_t_minus_30` | 0.2388 | 0.0434 | Short-term historical lag ($T-30\text{ min}$). |
-| 5 | `do_t_minus_15` | 0.2385 | **0.0758** | Immediate past trajectory ($T-15\text{ min}$). |
+| 5 | `do_t_minus_15` | 0.2385 | **0.0758** | Represents DO 15 min prior; with current DO, contributes trajectory information. |
 | 6 | `do_t_minus_120` | 0.1562 | 0.0155 | 2-hour window boundary anchor ($T-120\text{ min}$). |
 | 7 | `do_t_minus_45` | 0.1555 | 0.0317 | Intermediate trend lag ($T-45\text{ min}$). |
 | 8 | `do_t_minus_90` | 0.1237 | 0.0144 | Historical trajectory lag ($T-90\text{ min}$). |
@@ -48,12 +52,12 @@ Evaluated across 1,000 stratified observations from the held-out temporal test s
 
 #### Key Global Observations:
 1. `current_do` is by far the single most influential predictor in both architectures, establishing the proximity of the pond to the hypoxic cutoff ($3.0\text{ mg/L}$).
-2. Diurnal timing (`minute_of_day` and `hour_of_day`) represents the second most critical axis, capturing whether the pond is entering daytime solar oxygenation or nocturnal dissolved oxygen depletion.
-3. Recent history (`do_t_minus_15` and `do_t_minus_30`) provides trajectory velocity information, enabling the model to distinguish between a recovering pond and a crashing pond.
+2. Diurnal timing (`minute_of_day` and `hour_of_day`) represents the second most critical axis, encoding time-of-day patterns observed in the dataset.
+3. Recent history (`do_t_minus_15` and `do_t_minus_30`) represents DO levels 15 and 30 minutes before prediction and, together with current DO, contributes information about the recent temporal trajectory.
 
 ### 2.3 Representative Case Studies
 
-#### Case 1: Photosynthetic Recovery Event (Ground Truth: SAFE)
+#### SAFE Case Study — Rising DO During Daytime (Ground Truth: SAFE)
 - **Pond:** `ara2_0677080b` | **Timestamp:** `2026-01-26 10:15:00`
 - **Current DO:** `5.40 mg/L` | **2-Hour Prior DO:** `2.92 mg/L`
 - **Model Output:**
@@ -62,14 +66,14 @@ Evaluated across 1,000 stratified observations from the held-out temporal test s
 - **Deconstruction:**
   Although DO had been at $2.92\text{ mg/L}$ two hours prior, readings increased monotonically ($3.23 \rightarrow 3.72 \rightarrow 4.21 \rightarrow 5.40\text{ mg/L}$) during mid-morning (`10:15 AM`). SHAP attributions for `minute_of_day` ($-1.1596$), `current_do` ($-0.6279$), and `hour_of_day` ($-0.3339$) pushed heavily toward `SAFE`, preventing a false alarm despite prior low oxygen.
 
-#### Case 2: Nocturnal Respiration Depletion Event (Ground Truth: AT_RISK)
+#### AT_RISK Case Study — Declining DO During Nighttime (Ground Truth: AT_RISK)
 - **Pond:** `ara2_0677080b` | **Timestamp:** `2026-01-26 03:30:00`
 - **Current DO:** `3.84 mg/L` | **2-Hour Prior DO:** `5.02 mg/L`
 - **Model Output:**
   - XGBoost: Risk Probability = **93.41%** (`AT_RISK`)
   - Random Forest: Risk Probability = **91.67%** (`AT_RISK`)
 - **Deconstruction:**
-  Although current DO remained above the critical threshold at $3.84\text{ mg/L}$, the trajectory showed a sustained drop from $5.02\text{ mg/L}$ during pre-dawn darkness (`03:30 AM`). SHAP attributions for `current_do` ($+2.0758$), `minute_of_day` ($+0.3809$), and `do_t_minus_15` ($+0.1468$) pushed strongly toward `AT_RISK`, successfully triggering the early warning 2 hours before hypoxia.
+  Although current DO remained above the critical threshold at $3.84\text{ mg/L}$, the trajectory showed a sustained drop from $5.02\text{ mg/L}$ during nighttime (`03:30 AM`). SHAP attributions for `current_do` ($+2.0758$), `minute_of_day` ($+0.3809$), and `do_t_minus_15` ($+0.1468$) pushed strongly toward `AT_RISK`, successfully triggering the early warning 2 hours before hypoxia.
 
 ---
 
@@ -110,7 +114,7 @@ backend/
 
 ### 4.3 Validation & Boundary Enforcement
 1. **Operational Cutoff Enforcement:** If `current_do < 3.0 mg/L`, the API rejects the request with HTTP `400 Bad Request` and `status: ALREADY_LOW_DO`.
-2. **Lag Alias Support:** Clients can provide either `do_t_minus_15` or `do_t-15m`.
+2. **Canonical Input Naming:** The canonical public input standard is `do_t_minus_15` through `do_t_minus_120`. Alternative aliases (e.g. `do_t-15m`) are supported internally for client compatibility, but `do_t_minus_X` is the canonical standard.
 3. **Automatic Temporal Derivation:** `hour_of_day` and `minute_of_day` are automatically extracted from `prediction_timestamp`.
 4. **Data Sanity Checks:** Negative sensor values, non-numeric values, missing fields, or empty strings return structured 400 JSON errors.
 
@@ -120,15 +124,15 @@ backend/
 
 The backend supports configurable model selection via the environment variable `MODEL_ARTIFACT_PATH`. Both Config C models deliver competitive, practical performance:
 
-| Criterion | XGBoost Config C | Random Forest Config C | Operational Guidance |
+| Operating Priority / Metric | XGBoost Config C | Random Forest Config C | Operational Guidance |
 |:---|:---:|:---:|:---|
-| **PR-AUC (Avg Precision)** | **0.7574** | 0.7471 | XGBoost is favored on ranking quality. |
-| **Recall (Sensitivity)** | **79.75%** (752 / 943) | 75.61% (713 / 943) | XGBoost catches more hypoxic events. |
+| **Highest PR-AUC among tested models** | **0.7574** | 0.7471 | XGBoost Config C achieves the highest PR-AUC across all evaluated models. |
+| **Recall (Sensitivity)** | **79.75%** (752 / 943) | 75.61% (713 / 943) | Highest recall among Config C tree models. |
 | **Specificity** | 90.46% | **93.11%** | Random Forest reduces false alarms. |
-| **False Positives (FP)** | 698 | **504** | RF saves 194 false alarms across the test set. |
+| **False Positives (FP)** | 698 | **504** | Random Forest produces 194 fewer false positives than XGBoost Config C at the default threshold; this could reduce unnecessary interventions in a deployment where alerts trigger aeration. |
 | **Default Selection** | **Default (`MODEL_ARTIFACT_PATH`)** | Alternative | Model choice depends on farm operating priorities. |
 
-*Framing note: Neither model is universally superior. A commercial hatchery with sensitive fingerlings may prefer XGBoost to maximize detection, while an extensive commercial farm with labor-intensive aeration may prefer Random Forest to minimize false alarms.*
+*Framing note: Neither model is universally superior. XGBoost Config C achieves the highest PR-AUC among tested models (0.7574) and highest recall among Config C tree models (79.75%), making it preferable when prioritizing detection of low-DO events within the DO-only feature space. Random Forest Config C achieves higher Specificity (93.11%), producing 194 fewer false positives than XGBoost Config C at the default threshold; this could reduce unnecessary interventions in a deployment where alerts trigger aeration. (Note: In Phase 3, Logistic Regression Config B demonstrated 89.93% recall across all 29 features, but at the cost of 2,158 false alarms; among tree-based models on Config C, XGBoost achieves the highest recall).*
 
 ---
 

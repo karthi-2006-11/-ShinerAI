@@ -256,6 +256,7 @@
       ],
       "feature_count": 11,
       "feature_configuration": "Config C (DO History Only)",
+      "provenance": "Config C model artifacts were reproduced using the frozen Phase 3 training procedure solely to create dedicated explainability/API artifacts; no model architecture, dataset, split, feature set, or training procedure was changed.",
       "metrics": {
         "pr_auc": 0.7471,
         "roc_auc": 0.9144,
@@ -290,6 +291,7 @@
       ],
       "feature_count": 11,
       "feature_configuration": "Config C (DO History Only)",
+      "provenance": "Config C model artifacts were reproduced using the frozen Phase 3 training procedure solely to create dedicated explainability/API artifacts; no model architecture, dataset, split, feature set, or training procedure was changed.",
       "metrics": {
         "pr_auc": 0.7574,
         "roc_auc": 0.9162,

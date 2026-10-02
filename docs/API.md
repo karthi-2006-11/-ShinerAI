@@ -99,12 +99,13 @@ Provides detailed specifications of the loaded model, including expected feature
     "test_neg": 7318,
     "test_pos": 943,
     "threshold": 0.5,
+    "threshold": 0.5,
     "tn": 6620,
     "tp": 752
   },
   "model_artifact": "xgboost_config_c.joblib",
   "model_family": "XGBoost",
-  "model_selection_guidance": "XGBoost Config C achieves higher PR-AUC (0.7574) and Recall (79.75%), making it ideal when catching the maximum number of low-DO events is prioritized. Random Forest Config C achieves higher Specificity (93.11%) with fewer false alarms (504 vs 698), making it ideal when false alarm suppression is paramount. Model choice depends on farm operational trade-offs.",
+  "model_selection_guidance": "XGBoost Config C achieves the highest PR-AUC among tested models (0.7574) and highest recall among Config C tree models (79.75%), making it preferable when prioritizing detection of low-DO events within the DO-only feature space. Random Forest Config C achieves higher Specificity (93.11%), producing 194 fewer false positives than XGBoost Config C at the default threshold; this could reduce unnecessary interventions in a deployment where alerts trigger aeration. Model choice depends on farm operational trade-offs.",
   "operational_do_threshold": 3.0,
   "prediction_horizon_hours": 2.0,
   "scientific_scope": "Predictions quantify statistical risk associations of water DO falling below 3.0 mg/L within the 2-hour horizon. Predictions do NOT prove biological causality or directly predict fish mortality."
@@ -125,14 +126,17 @@ Executes risk scoring for a single pond observation.
 | `pond_id` | string | Yes | Unique pond identifier (e.g., `"ara2_0677080b"`). |
 | `prediction_timestamp` | string | Yes | ISO 8601 timestamp (e.g., `"2026-01-26T03:30:00"`). |
 | `current_do` | float | Yes | Current DO in mg/L. **Must be $\ge 3.0$**. |
-| `do_t_minus_15` (or `do_t-15m`) | float | Yes | DO reading 15 minutes prior (mg/L). |
-| `do_t_minus_30` (or `do_t-30m`) | float | Yes | DO reading 30 minutes prior (mg/L). |
-| `do_t_minus_45` (or `do_t-45m`) | float | Yes | DO reading 45 minutes prior (mg/L). |
-| `do_t_minus_60` (or `do_t-60m`) | float | Yes | DO reading 60 minutes prior (mg/L). |
-| `do_t_minus_75` (or `do_t-75m`) | float | Yes | DO reading 75 minutes prior (mg/L). |
-| `do_t_minus_90` (or `do_t-90m`) | float | Yes | DO reading 90 minutes prior (mg/L). |
-| `do_t_minus_105` (or `do_t-105m`) | float | Yes | DO reading 105 minutes prior (mg/L). |
-| `do_t_minus_120` (or `do_t-120m`) | float | Yes | DO reading 120 minutes prior (mg/L). |
+| `do_t_minus_15` | float | Yes | DO reading 15 minutes prior (mg/L). **Canonical format**. |
+| `do_t_minus_30` | float | Yes | DO reading 30 minutes prior (mg/L). **Canonical format**. |
+| `do_t_minus_45` | float | Yes | DO reading 45 minutes prior (mg/L). **Canonical format**. |
+| `do_t_minus_60` | float | Yes | DO reading 60 minutes prior (mg/L). **Canonical format**. |
+| `do_t_minus_75` | float | Yes | DO reading 75 minutes prior (mg/L). **Canonical format**. |
+| `do_t_minus_90` | float | Yes | DO reading 90 minutes prior (mg/L). **Canonical format**. |
+| `do_t_minus_105` | float | Yes | DO reading 105 minutes prior (mg/L). **Canonical format**. |
+| `do_t_minus_120` | float | Yes | DO reading 120 minutes prior (mg/L). **Canonical format**. |
+
+> **Canonical Naming Convention:**  
+> The canonical public standard is `do_t_minus_15` through `do_t_minus_120` (matching the model feature schema). While alternative short aliases like `do_t-15m` are accepted internally by the server for client compatibility, all client integrations and documentation should use the canonical `do_t_minus_X` format.
 
 *Note: Temporal features (`hour_of_day` and `minute_of_day`) are automatically extracted from `prediction_timestamp`.*
 
@@ -144,14 +148,14 @@ curl -X POST http://localhost:5000/predict \
     "pond_id": "ara2_0677080b",
     "prediction_timestamp": "2026-01-26T03:30:00",
     "current_do": 3.84,
-    "do_t-15m": 4.05,
-    "do_t-30m": 4.49,
-    "do_t-45m": 4.67,
-    "do_t-60m": 4.69,
-    "do_t-75m": 4.73,
-    "do_t-90m": 4.85,
-    "do_t-105m": 5.00,
-    "do_t-120m": 5.02
+    "do_t_minus_15": 4.05,
+    "do_t_minus_30": 4.49,
+    "do_t_minus_45": 4.67,
+    "do_t_minus_60": 4.69,
+    "do_t_minus_75": 4.73,
+    "do_t_minus_90": 4.85,
+    "do_t_minus_105": 5.00,
+    "do_t_minus_120": 5.02
   }'
 ```
 

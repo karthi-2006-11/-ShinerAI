@@ -55,9 +55,10 @@ By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fi
 
 - **Phase 4: Model Explainability & Flask Backend REST API** — **COMPLETED**
   - Implemented SHAP TreeExplainer pipeline (`src/explainability_pipeline.py`) computing global feature importance (1,000 test observations) and local waterfall/bar explanations for representative SAFE and AT_RISK cases.
-  - Confirmed `current_do` as rank #1 driver, diurnal markers (`minute_of_day`, `hour_of_day`) as #2 and #3, and recent trajectory lags as #4 and #5.
-  - Built production Flask REST API (`backend/`) with strict input validation, boundary condition enforcement ($\text{DO} \ge 3.0\text{ mg/L}$), and four endpoints (`/health`, `/model-info`, `/predict`, `/explain`).
-  - Supported configurable model artifact loading (`MODEL_ARTIFACT_PATH`) between XGBoost Config C and Random Forest Config C.
+  - Confirmed `current_do` as rank #1 driver, diurnal markers (`minute_of_day`, `hour_of_day`) encoding time-of-day patterns as #2 and #3, and recent trajectory lags as #4 and #5.
+  - Transparent artifact provenance: Config C model artifacts were reproduced using the frozen Phase 3 training procedure solely to create dedicated explainability/API artifacts; no model architecture, dataset, split, feature set, or training procedure was changed.
+  - Built production Flask REST API (`backend/`) with strict input validation, boundary condition enforcement ($\text{DO} \ge 3.0\text{ mg/L}$), canonical public input naming (`do_t_minus_15` to `do_t_minus_120`), and four endpoints (`/health`, `/model-info`, `/predict`, `/explain`).
+  - Supported configurable model artifact loading (`MODEL_ARTIFACT_PATH`) between XGBoost Config C (highest PR-AUC among tested models: 0.7574, highest recall among Config C tree models: 79.75%) and Random Forest Config C (highest Specificity: 93.11%, producing 194 fewer false positives than XGBoost Config C at the default threshold; this could reduce unnecessary interventions in a deployment where alerts trigger aeration).
   - Detailed report: [`PHASE_4_REPORT.md`](file:///d:/FISH/PHASE_4_REPORT.md).
   - Beginner guide: [`PHASE_4_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_4_BEGINNER_GUIDE.md).
   - REST API specification: [`docs/API.md`](file:///d:/FISH/docs/API.md).

@@ -97,10 +97,10 @@ class ModelService:
             "prediction_horizon_hours": PREDICTION_HORIZON_HOURS,
             "held_out_test_metrics": metrics,
             "model_selection_guidance": (
-                "XGBoost Config C achieves higher PR-AUC (0.7574) and Recall (79.75%), "
-                "making it ideal when catching the maximum number of low-DO events is prioritized. "
-                "Random Forest Config C achieves higher Specificity (93.11%) with fewer false alarms (504 vs 698), "
-                "making it ideal when false alarm suppression is paramount. Model choice depends on farm operational trade-offs."
+                "XGBoost Config C achieves the highest PR-AUC among tested models (0.7574) and highest recall among Config C tree models (79.75%), "
+                "making it preferable when prioritizing detection of low-DO events within the DO-only feature space. "
+                "Random Forest Config C achieves higher Specificity (93.11%), producing 194 fewer false positives than XGBoost Config C at the default threshold; "
+                "this could reduce unnecessary interventions in a deployment where alerts trigger aeration. Model choice depends on farm operational trade-offs."
             ),
             "scientific_scope": (
                 "Predictions quantify statistical risk associations of water DO falling below 3.0 mg/L "

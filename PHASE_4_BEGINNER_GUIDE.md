@@ -66,6 +66,10 @@ $env:MODEL_ARTIFACT_PATH="models/random_forest_config_c.joblib"
 python -m backend.app
 ```
 
+> [!NOTE]
+> **Model Artifact Provenance:**  
+> Config C model artifacts were reproduced using the frozen Phase 3 training procedure solely to create dedicated explainability/API artifacts; no model architecture, dataset, split, feature set, or training procedure was changed.
+
 ---
 
 ## 4. How to Send Requests to the API
@@ -92,7 +96,7 @@ curl.exe http://localhost:5000/health
 ---
 
 ### Example 2: Make a Prediction (`POST /predict`)
-Send a pond observation where oxygen is dropping at night:
+Send a pond observation where oxygen is dropping at night (using canonical `do_t_minus_X` keys):
 ```powershell
 curl.exe -X POST http://localhost:5000/predict `
   -H "Content-Type: application/json" `
@@ -100,14 +104,14 @@ curl.exe -X POST http://localhost:5000/predict `
     "pond_id": "pond_nocturnal_01",
     "prediction_timestamp": "2026-01-26T03:30:00",
     "current_do": 3.84,
-    "do_t-15m": 4.05,
-    "do_t-30m": 4.49,
-    "do_t-45m": 4.67,
-    "do_t-60m": 4.69,
-    "do_t-75m": 4.73,
-    "do_t-90m": 4.85,
-    "do_t-105m": 5.00,
-    "do_t-120m": 5.02
+    "do_t_minus_15": 4.05,
+    "do_t_minus_30": 4.49,
+    "do_t_minus_45": 4.67,
+    "do_t_minus_60": 4.69,
+    "do_t_minus_75": 4.73,
+    "do_t_minus_90": 4.85,
+    "do_t_minus_105": 5.00,
+    "do_t_minus_120": 5.02
   }'
 ```
 
@@ -139,14 +143,14 @@ curl.exe -X POST http://localhost:5000/explain `
     "pond_id": "pond_nocturnal_01",
     "prediction_timestamp": "2026-01-26T03:30:00",
     "current_do": 3.84,
-    "do_t-15m": 4.05,
-    "do_t-30m": 4.49,
-    "do_t-45m": 4.67,
-    "do_t-60m": 4.69,
-    "do_t-75m": 4.73,
-    "do_t-90m": 4.85,
-    "do_t-105m": 5.00,
-    "do_t-120m": 5.02
+    "do_t_minus_15": 4.05,
+    "do_t_minus_30": 4.49,
+    "do_t_minus_45": 4.67,
+    "do_t_minus_60": 4.69,
+    "do_t_minus_75": 4.73,
+    "do_t_minus_90": 4.85,
+    "do_t_minus_105": 5.00,
+    "do_t_minus_120": 5.02
   }'
 ```
 
@@ -181,8 +185,8 @@ curl.exe -X POST http://localhost:5000/explain `
 ### Q1: Why do I get a 400 error when `current_do` is 2.5 mg/L?
 **Answer:** The goal of ShinerAI is **early warning**. It is designed to alert fish farmers *before* dissolved oxygen drops below $3.0\text{ mg/L}$. If current DO is already $2.5\text{ mg/L}$, the pond is already in a critical state! The system rejects this request with HTTP `400 Bad Request` and `status: ALREADY_LOW_DO` because predicting future risk is unnecessary—emergency aeration should already be running.
 
-### Q2: Can I use `do_t-15m` instead of `do_t_minus_15`?
-**Answer:** Yes! The API supports both formats (`do_t_minus_15` and `do_t-15m`).
+### Q2: What is the canonical naming format for historical lags?
+**Answer:** The canonical format is `do_t_minus_15` through `do_t_minus_120`. While the API accepts shorter aliases like `do_t-15m` internally for convenience, we recommend using the canonical `do_t_minus_X` format in all integrations to match the model feature schema.
 
 ### Q3: Do I need to calculate `hour_of_day` and `minute_of_day` myself?
 **Answer:** No! Just pass an ISO timestamp like `"2026-01-26T03:30:00"`. The API automatically parses the timestamp and extracts the exact hour and minute for the model.
