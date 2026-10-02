@@ -138,13 +138,33 @@ The backend supports configurable model selection via the environment variable `
 
 ## 6. Verification and Test Results
 
+### 6.1 Artifact Reproducibility Verification
+All reported Phase 3 evaluation metrics and thresholded confusion-matrix counts were reproduced exactly by the Phase 4 Config C artifacts on the same temporal holdout set.
+
+| Metric / Count | Phase 3 Reported ([`model_comparison.csv`](file:///d:/FISH/results/reports/model_comparison.csv)) | Phase 4 XGBoost Config C | Phase 4 Random Forest Config C | Match Status |
+|:---|:---:|:---:|:---:|:---:|
+| **PR-AUC (Average Precision)** | 0.7574 (XGB) / 0.7471 (RF) | 0.7574 | 0.7471 | Exact match |
+| **ROC-AUC** | 0.9162 (XGB) / 0.9144 (RF) | 0.9162 | 0.9144 | Exact match |
+| **Precision** | 51.86% (XGB) / 58.59% (RF) | 51.86% | 58.59% | Exact match |
+| **Recall (Sensitivity)** | 79.75% (XGB) / 75.61% (RF) | 79.75% | 75.61% | Exact match |
+| **F1-Score** | 0.6285 (XGB) / 0.6602 (RF) | 0.6285 | 0.6602 | Exact match |
+| **Specificity** | 90.46% (XGB) / 93.11% (RF) | 90.46% | 93.11% | Exact match |
+| **Accuracy** | 89.24% (XGB) / 91.11% (RF) | 89.24% | 91.11% | Exact match |
+| **True Positives (TP)** | 752 (XGB) / 713 (RF) | 752 | 713 | Exact match |
+| **False Positives (FP)** | 698 (XGB) / 504 (RF) | 698 | 504 | Exact match |
+| **True Negatives (TN)** | 6,620 (XGB) / 6,814 (RF) | 6,620 | 6,814 | Exact match |
+| **False Negatives (FN)** | 191 (XGB) / 230 (RF) | 191 | 230 | Exact match |
+
+> **Reproducibility Note:**  
+> No difference was observed in the verified evaluation metrics or thresholded classification counts. Note that this verification validates the reported metrics and confusion-matrix counts on the temporal test set rather than full per-row prediction arrays.
+
+### 6.2 Automated Test Suite Execution
 The entire automated test suite was executed in the project virtual environment:
 ```
 pytest -v
 ```
 **Results:**
 - Total Tests: **59 passed** (0 failures, 0 errors).
-- Execution Time: **8.92 seconds**.
 - Coverage:
   - 32 legacy tests for Phase 1 (data pipeline, QC parsing), Phase 2 (cleaning, leak-free targets), and Phase 3 (model evaluation, temporal purge gap).
   - 27 new tests for Phase 4 covering all 5 REST endpoints, model configurability, boundary conditions, error handling, SHAP explanation structures, and artifact presence.

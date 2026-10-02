@@ -581,8 +581,9 @@ Phase 4 transitioned the frozen Phase 3 Machine Learning models into an interpre
 - **Strict Boundary & Input Enforcement:** Rejects `current_do < 3.0 mg/L` with HTTP `400 Bad Request` (`status: ALREADY_LOW_DO`), enforces ISO 8601 timestamps, validates all 8 historical lags, and specifies canonical public input naming (`do_t_minus_15` through `do_t_minus_120`, with internal alias support).
 - **Model Configurability:** Serves `models/xgboost_config_c.joblib` by default (highest PR-AUC among tested models: 0.7574, highest recall among Config C tree models: 79.75%), seamlessly switchable to `models/random_forest_config_c.joblib` (highest Specificity: 93.11%, producing 194 fewer false positives than XGBoost Config C at the default threshold; this could reduce unnecessary interventions in a deployment where alerts trigger aeration) via `MODEL_ARTIFACT_PATH`.
 
-### 3. Automated Verification:
+### 3. Automated Verification & Artifact Reproducibility:
 - **59 total automated tests** passing with 100% success rate (32 legacy tests from Phases 1–3 + 27 new tests in `tests/test_phase4_api.py` and `tests/test_phase4_explainability.py`).
+- **Artifact Reproducibility:** All reported Phase 3 evaluation metrics and thresholded confusion-matrix counts were reproduced exactly by the Phase 4 Config C artifacts on the same temporal holdout set. No difference was observed in the verified evaluation metrics or thresholded classification counts.
 
 ---
 
