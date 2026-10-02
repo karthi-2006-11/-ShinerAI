@@ -50,20 +50,23 @@ The dashboard layout features a 2-column responsive workspace that gracefully ad
 | DEMO SCENARIOS (Evaluated Test Cases):                                                  |
 | [ SAFE Case Study — Rising DO During Daytime ]   [ AT_RISK Case Study — Declining DO During Nighttime ] |
 +------------------------------------------------------------+----------------------------+
-| LEFT COLUMN                                                | RIGHT COLUMN               |
-| 1. Pond Telemetry Input Panel                              | 3. AI Risk Assessment      |
+| ROW 1 (LEFT)                                               | ROW 1 (RIGHT)              |
+| 1. Pond Telemetry Input Panel                              | 2. AI Risk Assessment      |
 |    - Pond ID (e.g., ara2_0677080b)                         |    - State: SAFE / AT_RISK |
 |    - Prediction Timestamp (e.g., 2026-01-26T10:15:00)      |    - Risk Probability: %   |
 |    - Current DO (mg/L) [Boundary >= 3.00 mg/L]             |    - 0-100% Visual Meter   |
 |    - 8 Historical Lags (T-120m to T-15m)                   |    - Advisory Message      |
 |    [ Analyze Risk Button ] [ Reset Form ]                  |                            |
-|                                                            | 4. Local SHAP Explanation  |
-| 2. 2-Hour DO Trajectory Chart                              |    - Feature Table         |
-|    - Observed DO line (T-120m -> T)                        |    - Direction Badges      |
-|    - Horizontal 3.0 mg/L Hypoxia Reference Line (Dashed)   |    - Top Risk & Safe Driver|
-|                                                            |                            |
-|                                                            | 5. Global Feature Signals  |
-|                                                            | 6. Model Specifications    |
++------------------------------------------------------------+----------------------------+
+| ROW 2 (LEFT)                                               | ROW 2 (RIGHT)              |
+| 3. 2-Hour DO Trajectory Chart                              | 4. Local SHAP Explanation  |
+|    - Observed DO line (T-120m -> T)                        |    - Feature Table         |
+|    - Horizontal 3.0 mg/L Reference Line (Dashed)           |    - Direction Badges      |
+|                                                            |    - Top Risk & Safe Driver|
++------------------------------------------------------------+----------------------------+
+| ROW 3 (LEFT)                                               | ROW 3 (RIGHT)              |
+| 5. Global Feature Importance Signals                       | 6. Model Specifications    |
+|    - Ranked XGBoost Config C SHAP bars                     |    - Technical Benchmarks  |
 +------------------------------------------------------------+----------------------------+
 | RESEARCH SCOPE & GUARDRAILS FOOTER:                                                     |
 | Predicts water hypoxia events (< 3.0 mg/L in 2h). Does NOT predict fish disease/death.  |

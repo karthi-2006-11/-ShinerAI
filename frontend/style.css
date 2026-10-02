@@ -311,14 +311,19 @@ body {
 /* Two-column Workspace Grid */
 .workspace-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
     align-items: start;
+}
+
+.workspace-grid > .card {
+    margin-bottom: 0;
 }
 
 @media (max-width: 1024px) {
     .workspace-grid {
         grid-template-columns: 1fr;
+        gap: 1.25rem;
     }
 }
 

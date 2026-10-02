@@ -63,9 +63,8 @@
 
         <!-- Two-Column Workspace -->
         <div class="workspace-grid">
-            <!-- Left Column: Pond Input & 2-Hour DO Trajectory Chart -->
-            <div class="column-left">
-                <!-- Input Panel -->
+
+            <!-- Row 1 Left: Pond Telemetry Input -->
                 <section class="card input-card" aria-labelledby="input-heading">
                     <div class="card-header">
                         <h2 id="input-heading" class="card-title">Pond Telemetry Input</h2>
@@ -160,37 +159,7 @@
                     </form>
                 </section>
 
-                <!-- 2-Hour DO Trajectory Chart Card -->
-                <section class="card chart-card" aria-labelledby="chart-heading">
-                    <div class="card-header">
-                        <div>
-                            <h2 id="chart-heading" class="card-title">2-Hour DO Trajectory Visualization</h2>
-                            <span class="card-caption">Observed Dissolved Oxygen from T-120m to T (Current)</span>
-                        </div>
-                    </div>
-
-                    <div id="doChartContainer" class="chart-container">
-                        <!-- Responsive SVG chart generated dynamically by app.js -->
-                        <svg id="doChart" viewBox="0 0 620 260" class="do-svg-chart" role="img" aria-label="Dissolved oxygen trajectory graph over the recent 2 hours with 3.0 mg/L reference line">
-                            <!-- Injected by JavaScript -->
-                        </svg>
-                    </div>
-
-                    <div class="chart-footer">
-                        <div class="chart-legend">
-                            <span class="legend-item"><span class="legend-line line-trajectory"></span> Observed DO Trajectory</span>
-                            <span class="legend-item"><span class="legend-line line-threshold"></span> 3.0 mg/L Reference Line</span>
-                        </div>
-                        <p id="chartThresholdNote" class="chart-note">
-                            <strong>Note:</strong> 3.0 mg/L is the provisional project threshold used for this research prediction task. It is not presented as a universal biological threshold for all aquatic species.
-                        </p>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Right Column: Prediction Result & SHAP Explanation -->
-            <div class="column-right">
-                <!-- Prediction Result Card -->
+            <!-- Row 1 Right: AI Risk Assessment -->
                 <section id="predictionCard" class="card result-card" aria-labelledby="prediction-heading">
                     <div class="card-header">
                         <h2 id="prediction-heading" class="card-title">AI Risk Assessment</h2>
@@ -270,7 +239,34 @@
                     </div>
                 </section>
 
-                <!-- Explanation Panel (Local SHAP) -->
+            <!-- Row 2 Left: 2-Hour DO Trajectory Visualization -->
+                <section class="card chart-card" aria-labelledby="chart-heading">
+                    <div class="card-header">
+                        <div>
+                            <h2 id="chart-heading" class="card-title">2-Hour DO Trajectory Visualization</h2>
+                            <span class="card-caption">Observed Dissolved Oxygen from T-120m to T (Current)</span>
+                        </div>
+                    </div>
+
+                    <div id="doChartContainer" class="chart-container">
+                        <!-- Responsive SVG chart generated dynamically by app.js -->
+                        <svg id="doChart" viewBox="0 0 620 260" class="do-svg-chart" role="img" aria-label="Dissolved oxygen trajectory graph over the recent 2 hours with 3.0 mg/L reference line">
+                            <!-- Injected by JavaScript -->
+                        </svg>
+                    </div>
+
+                    <div class="chart-footer">
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-line line-trajectory"></span> Observed DO Trajectory</span>
+                            <span class="legend-item"><span class="legend-line line-threshold"></span> 3.0 mg/L Reference Line</span>
+                        </div>
+                        <p id="chartThresholdNote" class="chart-note">
+                            <strong>Note:</strong> 3.0 mg/L is the provisional project threshold used for this research prediction task. It is not presented as a universal biological threshold for all aquatic species.
+                        </p>
+                    </div>
+                </section>
+
+            <!-- Row 2 Right: Why did ShinerAI make this prediction? (Local SHAP Explanation) -->
                 <section id="explanationCard" class="card explanation-card" aria-labelledby="explain-heading">
                     <div class="card-header">
                         <div>
@@ -338,7 +334,7 @@
                     </div>
                 </section>
 
-                <!-- Global Feature Importance Section -->
+            <!-- Row 3 Left: Important Signals Observed in the Model (Global Feature Importance) -->
                 <section class="card global-card" aria-labelledby="global-heading">
                     <div class="card-header">
                         <div>
@@ -359,7 +355,7 @@
                     </div>
                 </section>
 
-                <!-- Model Information Panel -->
+            <!-- Row 3 Right: Model Specifications & Evaluation Summary -->
                 <section class="card model-info-card" aria-labelledby="modelinfo-heading">
                     <div class="card-header">
                         <div>
@@ -404,7 +400,6 @@
                         </div>
                     </div>
                 </section>
-            </div>
         </div>
     </main>
 
