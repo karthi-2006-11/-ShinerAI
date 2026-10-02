@@ -215,3 +215,6 @@ tests/test_phase5_frontend.py ....................................... [100%]
 ## 9. Phase 5 Sign-off
 
 Phase 5 has fulfilled all requirements under the `IMPLEMENT → TEST → VERIFY → DOCUMENT → GIT COMMIT → STOP` workflow. All source files, styles, tests, and documentation are complete and verified.
+
+### 9.1 Phase 5 Correction & Integrity Statement
+No models were retrained during this Phase 5 correction. The Phase 4 Config C artifacts remain unchanged, and the Phase 1–3 datasets, feature engineering, evaluation methodology, and reported metrics remain frozen.

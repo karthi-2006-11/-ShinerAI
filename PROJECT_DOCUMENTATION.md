@@ -627,6 +627,9 @@ All five research and development phases of ShinerAI are complete, fully verifie
 4. **Phase 4 (Model Serving, Explainability & REST API):** Implemented global and local SHAP explainability and a robust modular Flask REST backend (`/health`, `/model-info`, `/predict`, `/explain`).
 5. **Phase 5 (Dashboard, Frontend Integration & Final E2E Verification):** Delivered a responsive, accessible web dashboard, SVG trajectory charting, and complete end-to-end integration verified by 77 passing automated tests.
 
+> **Phase 5 Integrity Statement:**  
+> No models were retrained during this Phase 5 correction. The Phase 4 Config C artifacts remain unchanged, and the Phase 1–3 datasets, feature engineering, evaluation methodology, and reported metrics remain frozen.
+
 ---
 
 ## Appendix: Dataset, Model, and Explainability Visualizations Reference
