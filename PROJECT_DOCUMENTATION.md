@@ -510,8 +510,9 @@ The model predicts **impending low-dissolved-oxygen events** ($\text{DO} < 3.0\t
   - **Config B (Current + Full History, 29 features):** Config A + 8 DO lags ($t-15\text{m} \dots t-120\text{m}$) + 8 pH lags + 8 Temp lags.
   - **Config C (DO History Only, 11 features):** `current_do`, `hour_of_day`, `minute_of_day` + 8 DO lags.
   - *(Features consist of discrete historical lag observations; no explicit derivative or rate feature was engineered. Redundant features `do_t`, `ph_t`, `temp_t` and non-predictors were explicitly omitted).*
-- **Provenance of 4.2 mg/L Heuristic Baseline:**
-  - Derived strictly using training data only (Option B). A discrete grid search across threshold values $th \in [3.0, 6.0]$ in increments of $0.1\text{ mg/L}$ on the training partition ($N = 32,908$) maximized training F1-score ($th = 4.20\text{ mg/L}$, train F1 = 0.5940). Zero test-set data was used to select this threshold.
+- **Provenance of Current-DO Baselines:**
+  - **Current-DO Threshold Baseline (DO <= 4.2 mg/L):** A direct Boolean decision rule derived strictly using training data only (Option B). A discrete grid search across threshold values $th \in [3.0, 6.0]$ in increments of $0.1\text{ mg/L}$ on the training partition ($N = 32,908$) maximized training F1-score ($th = 4.20\text{ mg/L}$, train F1 = 0.5940; zero test data used). On the holdout test set, it achieves: $\text{TP} = 667, \text{FP} = 522, \text{TN} = 6796, \text{FN} = 276, \text{Recall} = 70.73\%, \text{Precision} = 56.10\%, \text{F1} = 0.6257, \text{Specificity} = 92.87\%$.
+  - **Current-DO Ranking Baseline (1-D Logistic):** A continuous 1-D model evaluating the ranking quality of instantaneous DO across all thresholds ($\text{PR-AUC} = 0.6149, \text{ROC-AUC} = 0.9024$). At default balanced threshold ($p = 0.50$, alerting whenever $\text{current\_do} \le 5.93\text{ mg/L}$), it detects 845 events ($\text{Recall} = 89.61\%$) with 1,954 false alarms ($\text{Precision} = 30.19\%, \text{Specificity} = 73.30\%, \text{F1} = 0.4516$).
 - **Primary Evaluation (Temporal Holdout):**
   - Evaluated chronologically per pond: earlier 80% of time for training (32,908 examples), later 20% of time for testing (8,261 examples).
   - **2-Hour Purge Gap:** Purged 108 boundary observations whose future 2-hour target window crossed into the test period, guaranteeing zero label leakage.
@@ -525,7 +526,8 @@ The model predicts **impending low-dissolved-oxygen events** ($\text{DO} < 3.0\t
 | Model | Feature Set | PR-AUC | ROC-AUC | F1-Score | Recall | Precision | Specificity | Accuracy |
 |---|---|---|---|---|---|---|---|---|
 | **Majority Baseline** | None | 0.1142 | 0.5000 | 0.0000 | 0.0000 | 0.0000 | 1.0000 | 0.8858 |
-| **Current-DO Baseline ($\le 4.2$)** | `current_do` only | 0.6149 | 0.9024 | 0.4516 | 0.8961 | 0.3019 | 0.7330 | 0.7516 |
+| **Current-DO Threshold Baseline ($\le 4.2$)** | `current_do` only (Boolean rule) | N/A | N/A | 0.6257 | 0.7073 | 0.5610 | 0.9287 | 0.9034 |
+| **Current-DO Ranking Baseline (1-D Logistic)** | `current_do` only (continuous ranking) | 0.6149 | 0.9024 | 0.4516 | 0.8961 | 0.3019 | 0.7330 | 0.7516 |
 | **Logistic Regression** | Config A (Current Only) | 0.6019 | 0.8994 | 0.4274 | 0.9003 | 0.2802 | 0.7020 | 0.7246 |
 | **Random Forest** | Config A (Current Only) | 0.7107 | 0.9116 | 0.6174 | 0.7709 | 0.5149 | 0.9064 | 0.8909 |
 | **XGBoost** | Config A (Current Only) | 0.7317 | 0.9150 | 0.5817 | 0.8102 | 0.4537 | 0.8743 | 0.8670 |
@@ -542,7 +544,7 @@ The model predicts **impending low-dissolved-oxygen events** ($\text{DO} < 3.0\t
 3. **Generalization to Held-Out Ponds:** 5-Fold GroupKFold cross-validation provided evidence of generalization to held-out ponds within this dataset (Random Forest mean PR-AUC: $0.7086 \pm 0.0456$; XGBoost mean PR-AUC: $0.7183 \pm 0.0467$). The models retained predictive performance when evaluated on ponds excluded from training.
 4. **Objective Model Selection & Trade-offs:** Rather than a single universal winner, model selection depends on the stated early-warning objective:
    - **XGBoost Config C:** Achieves highest overall PR-AUC (**0.7574**), catching 79.8% of low-DO events with 698 false alarms.
-   - **Random Forest Config C:** Achieves highest F1 (**0.6602**), highest precision (**58.59%**), and highest specificity (**93.11%**) at default threshold ($p=0.50$), minimizing false alarms to 504.
+   - **Random Forest Config C:** Achieves highest F1 (**0.6602**), highest precision (**58.59%**), and highest specificity (**93.11%**) at default threshold ($p=0.50$), producing fewer false alarms (504 FPs) which could reduce unnecessary interventions in a deployment where alerts trigger aeration.
    - **Logistic Regression Config B:** Provides a high-recall linear alternative (**89.93% recall**, catching 848 events), but at the cost of 2,158 false alarms.
    - See formal trade-off matrix in [`results/reports/final_model_selection.csv`](file:///d:/FISH/results/reports/final_model_selection.csv).
 

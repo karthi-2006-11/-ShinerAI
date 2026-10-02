@@ -2,7 +2,7 @@
 **Project:** ShinerAI  
 **Research Title:** AI-Based Early Warning System for Low Dissolved Oxygen in Fish Farms  
 **Phase:** Phase 3 — Machine Learning Training + Evaluation  
-**Status:** Completed (Final Scientific Review)  
+**Status:** In Progress (Calibrating Baseline Reporting)  
 **Generated Date:** October 2026  
 
 ---
@@ -21,7 +21,7 @@ Using the leak-free, 41,277-example supervised learning dataset produced in Phas
 
 ### Key Findings Summary:
 - **Primary Metric (PR-AUC):** **XGBoost Config C (DO History Only)** achieved the highest PR-AUC (**0.7574**), followed closely by **Random Forest Config C** (**0.7471**), **Random Forest Config B** (**0.7420**), and **XGBoost Config B** (**0.7353**).
-- **Default Operating Threshold ($p = 0.50$):** **Random Forest Config C** delivered the strongest precision (**58.59%**), specificity (**93.11%**), and F1-score (**0.6602**), resulting in the lowest false alarm burden (504 false positives).
+- **Default Operating Threshold ($p = 0.50$):** **Random Forest Config C** delivered the strongest precision (**58.59%**), specificity (**93.11%**), and F1-score (**0.6602**), resulting in fewer false alarms at the default threshold (504 false positives), which could reduce unnecessary interventions in a deployment where alerts trigger aeration.
 - **High Sensitivity Alternative:** **Logistic Regression Config B** achieved the highest recall (**89.93%**, catching 848 of 943 low-DO events), but produced 2,158 false alarms (precision 28.21%).
 - **Value of Historical Telemetry:** A consistent improvement was observed across the three tested model families when historical telemetry was included beyond instantaneous measurements.
 - **Config C Parsimony:** Within this dataset and tested feature configuration, recent DO history carried the strongest predictive signal. For both Random Forest and XGBoost, the DO-history-only configuration achieved PR-AUC at least as high as the full-history configuration.
@@ -58,22 +58,21 @@ Three distinct feature configurations were evaluated:
 
 ---
 
-## 4. Models Trained, Heuristic Provenance, & Imbalance Handling
+## 4. Models Trained, Baseline Provenance, & Imbalance Handling
 
-### Candidate Algorithms:
+### Candidate Algorithms & Baselines:
 1. **Majority-Class Baseline:** Naively predicts the majority class (`SAFE = 0`) with the empirical train prior ($P(\text{AT\_RISK}) = 0.1282$).
-2. **Current-DO Baseline:** A physical rule-of-thumb baseline based solely on `current_do`.
+2. **Current-DO Baselines:** Separated into two distinct evaluations to ensure methodological clarity:
+   - **Current-DO Threshold Baseline (DO <= 4.2 mg/L):** A direct Boolean decision rule. The threshold was **derived strictly using training data only (Option B)** via a grid search across $th \in [3.0, 6.0]$ in increments of $0.1\text{ mg/L}$ on `train_df` ($N = 32,908$) that maximized training F1-score ($th = 4.20\text{ mg/L}$, train F1 = 0.5940; zero test data used). Evaluated directly on the holdout test set as a binary classifier, it yields:
+     $$\text{TP} = 667, \quad \text{FP} = 522, \quad \text{TN} = 6796, \quad \text{FN} = 276$$
+     $$\text{Recall} = 70.73\%, \quad \text{Precision} = 56.10\%, \quad \text{F1} = 0.6257, \quad \text{Specificity} = 92.87\%$$
+     *(PR-AUC and ROC-AUC are N/A for this discrete Boolean rule as it produces no continuous ranking).*
+   - **Current-DO Ranking Baseline (1-D Logistic):** A continuous 1-D logistic regression fitted on `train_df[['current_do']]` with balanced weighting to evaluate the rank-ordering capability of instantaneous DO across all possible thresholds. Across the entire threshold spectrum, this continuous model yields:
+     $$\text{PR-AUC} = 0.6149, \quad \text{ROC-AUC} = 0.9024$$
+     At its default balanced probability threshold ($p = 0.50$, corresponding to alerting whenever $\text{current\_do} \le 5.93\text{ mg/L}$ due to balanced reweighting), it detects 845 events ($\text{Recall} = 89.61\%$) with 1,954 false alarms ($\text{Precision} = 30.19\%, \text{Specificity} = 73.30\%, \text{F1} = 0.4516$).
 3. **Logistic Regression:** Linear classification baseline with a `StandardScaler` pipeline and `class_weight='balanced'`.
 4. **Random Forest:** Ensemble of 100 decision trees (`max_depth=12`, `class_weight='balanced'`, `random_state=42`).
 5. **XGBoost:** Gradient-boosted decision tree ensemble (`n_estimators=100`, `max_depth=6`, `learning_rate=0.1`, `scale_pos_weight=6.80`, `random_state=42`).
-
-### Provenance of the 4.2 mg/L Heuristic Baseline:
-- **Origin & Method:** The 4.2 mg/L threshold was **derived strictly using training data only (Option B)**.
-- **Derivation:** A discrete grid search across threshold values $th \in [3.0, 6.0]$ in increments of $0.1\text{ mg/L}$ was executed exclusively on the training partition (`train_df`, $N = 32,908$). The threshold maximizing training F1-score was selected ($th = 4.20\text{ mg/L}$, yielding train F1 = 0.5940). Zero test-set data was used in determining this value.
-- **Dual Evaluation Perspectives:**
-  1. *Rank-Order Metric (Continuous 1D Logistic Probabilities):* Evaluating risk as a monotonic function of `current_do` across all decision thresholds yields **PR-AUC = 0.6149** and **ROC-AUC = 0.9024**. When evaluated at the default balanced probability threshold ($p = 0.50$, which corresponds to an operational decision boundary of $\text{current\_do} \le 5.93\text{ mg/L}$ due to balanced class reweighting), it detects 845 events (89.61% recall) with 1,954 false alarms (30.19% precision, 73.30% specificity, F1 = 0.4516).
-  2. *Direct Boolean Rule ($\text{current\_do} \le 4.2\text{ mg/L}$):* Evaluated as a discrete boolean rule on the holdout test set, it detects 667 events (70.73% recall) with 522 false alarms (56.10% precision, 92.87% specificity, F1 = 0.6257).
-- In either interpretation, the baseline demonstrates that instantaneous DO alone carries meaningful signal, but lacks the trajectory awareness required to distinguish stable water bodies from rapid deoxygenation.
 
 ### Class Imbalance Strategy:
 The dataset exhibits an 87.46% SAFE vs. 12.54% AT_RISK distribution (6.97 : 1 class ratio).
@@ -102,12 +101,13 @@ To prevent severe time-series leakage, splitting was performed chronologically w
 
 ## 6. Comprehensive Model Comparison (Temporal Holdout)
 
-Benchmark results evaluated on the 8,261 unseen temporal test examples ([`results/reports/model_comparison.csv`](file:///d:/FISH/results/reports/model_comparison.csv)):
+Benchmark results evaluated on the 8,261 unseen temporal test examples ([`results/reports/model_comparison.csv`](file:///d:/FISH/results/reports/model_comparison.csv) and [`results/reports/final_model_selection.csv`](file:///d:/FISH/results/reports/final_model_selection.csv)):
 
 | Model | Feature Set | PR-AUC | ROC-AUC | F1-Score | Recall | Precision | Specificity | Accuracy |
 |---|---|---|---|---|---|---|---|---|
 | **Majority Baseline** | None | 0.1142 | 0.5000 | 0.0000 | 0.0000 | 0.0000 | 1.0000 | 0.8858 |
-| **Current-DO Baseline ($\le 4.2$)** | `current_do` only | 0.6149 | 0.9024 | 0.4516 | 0.8961 | 0.3019 | 0.7330 | 0.7516 |
+| **Current-DO Threshold Baseline ($\le 4.2$)** | `current_do` only (Boolean rule) | N/A | N/A | 0.6257 | 0.7073 | 0.5610 | 0.9287 | 0.9034 |
+| **Current-DO Ranking Baseline (1-D Logistic)** | `current_do` only (continuous ranking) | 0.6149 | 0.9024 | 0.4516 | 0.8961 | 0.3019 | 0.7330 | 0.7516 |
 | **Logistic Regression** | Config A (Current Only) | 0.6019 | 0.8994 | 0.4274 | 0.9003 | 0.2802 | 0.7020 | 0.7246 |
 | **Random Forest** | Config A (Current Only) | 0.7107 | 0.9116 | 0.6174 | 0.7709 | 0.5149 | 0.9064 | 0.8909 |
 | **XGBoost** | Config A (Current Only) | 0.7317 | 0.9150 | 0.5817 | 0.8102 | 0.4537 | 0.8743 | 0.8670 |
@@ -119,6 +119,16 @@ Benchmark results evaluated on the 8,261 unseen temporal test examples ([`result
 | **XGBoost** | Config C (DO History Only) | **0.7574** | **0.9162** | **0.6285** | **0.7975** | **0.5186** | **0.9046** | **0.8924** |
 
 ### Confusion Matrix Breakdown (Temporal Test Set, 8,261 Observations, 943 Low-DO Events):
+- **Current-DO Threshold Baseline (DO <= 4.2 mg/L):**
+  - Impending low-DO events detected (TP): **667** (70.73% recall)
+  - Missed low-DO events (FN): **276**
+  - False alarms (FP): **522** (92.87% specificity)
+  - Correctly safe (TN): **6,796**
+- **Current-DO Ranking Baseline (1-D Logistic at $p=0.50$):**
+  - Impending low-DO events detected (TP): **845** (89.61% recall)
+  - Missed low-DO events (FN): **98**
+  - False alarms (FP): **1,954** (73.30% specificity)
+  - Correctly safe (TN): **5,364**
 - **Random Forest (Config B):**
   - Impending low-DO events detected (TP): **718** (76.14% recall)
   - Missed low-DO events (FN): **225**
@@ -169,18 +179,19 @@ A comprehensive model selection table was produced to evaluate trade-offs object
 
 | Model | Feature Config | PR-AUC | ROC-AUC | Precision | Recall | F1 | Specificity | GroupKFold PR-AUC | Operational Role / Trade-off |
 |---|---|---|---|---|---|---|---|---|---|
-| **XGBoost** | Config C | **0.7574** | 0.9162 | 0.5186 | **0.7975** | 0.6285 | 0.9046 | N/A | **Highest PR-AUC overall.** Strong balance of sensitivity (79.8% recall) and ranking quality. |
-| **Random Forest** | Config C | **0.7471** | 0.9144 | **0.5859** | 0.7561 | **0.6602** | **0.9311** | N/A | **Highest F1 and Specificity.** Minimizes false alarms to 504 at default threshold ($p=0.50$). |
+| **XGBoost** | Config C | **0.7574** | 0.9162 | 0.5186 | **0.7975** | 0.6285 | 0.9046 | N/A | **Highest PR-AUC overall.** Strong balance of sensitivity (79.8% recall) and ranking quality across thresholds. |
+| **Random Forest** | Config C | **0.7471** | 0.9144 | **0.5859** | 0.7561 | **0.6602** | **0.9311** | N/A | **Highest F1 and Specificity.** Produces fewer false alarms (504 FPs) at the default threshold, which could reduce unnecessary interventions where alerts trigger aeration. |
 | **Random Forest** | Config B | **0.7420** | **0.9169** | 0.5276 | 0.7614 | 0.6233 | 0.9121 | 0.7086 ± 0.0456 | **Balanced multi-sensor profile.** Stable held-out pond generalization across 17 ponds. |
 | **XGBoost** | Config B | **0.7353** | **0.9171** | 0.4725 | **0.7932** | 0.5922 | 0.8859 | **0.7183 ± 0.0467** | **High sensitivity with full sensors.** Highest GroupKFold cross-validation PR-AUC. |
 | **Logistic Regression** | Config B | 0.6763 | 0.9078 | 0.2821 | **0.8993** | 0.4295 | 0.7051 | 0.5950 ± 0.1175 | **High-Recall alternative.** Catches 89.9% of low-DO events, but generates 2,158 false alarms. |
-| **Current-DO Baseline** | `current_do` only | 0.6149 | 0.9024 | 0.3019 | 0.8961 | 0.4516 | 0.7330 | N/A | **Training-derived heuristic.** Confirms signal in current DO, but lacks trajectory discrimination. |
+| **Current-DO Threshold Baseline ($\le 4.2$)** | `current_do` only (Boolean rule) | N/A | N/A | 0.5610 | 0.7073 | 0.6257 | 0.9287 | N/A | **Training-derived Boolean heuristic.** Fixed threshold classification; catches 70.7% of events with 522 false alarms. |
+| **Current-DO Ranking Baseline (1-D Logistic)** | `current_do` only (continuous ranking) | 0.6149 | 0.9024 | 0.3019 | 0.8961 | 0.4516 | 0.7330 | N/A | **Continuous 1-D ranking baseline.** Evaluates discriminative capacity of instantaneous DO alone across all thresholds. |
 | **Majority Baseline** | None | 0.1142 | 0.5000 | 0.0000 | 0.0000 | 0.0000 | 1.0000 | N/A | **Naive benchmark.** Demonstrates why high accuracy (88.58%) is misleading. |
 
 ### Operational Recommendation Framing:
 No single model is universally "best" for all scenarios; selection depends directly on the farm's operational objective:
 1. **If the priority is overall threshold-independent discriminative power (PR-AUC):** **XGBoost Config C** is the strongest performer (PR-AUC = 0.7574).
-2. **If the priority is minimizing false alarms and aerator electricity costs at the default threshold:** **Random Forest Config C** is the strongest performer (Specificity = 93.11%, F1 = 0.6602, 504 false alarms).
+2. **If the priority is minimizing false alarms at the default threshold:** **Random Forest Config C** achieves the highest specificity (93.11%), highest precision (58.59%), and highest F1 (0.6602), producing fewer false alarms (504 FPs) at the default threshold, which could reduce unnecessary interventions in a deployment where alerts trigger aeration.
 3. **If the priority is maximum low-DO detection (risk-averse operation):** **Logistic Regression Config B** offers the highest raw recall (89.93%), or **XGBoost Config C** offers a high-recall tree alternative (79.75%) with far fewer false alarms (698 vs. 2,158).
 
 ---

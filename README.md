@@ -43,12 +43,12 @@ By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fi
 - **Formal Project Documentation** — **COMPLETED**
   - Comprehensive 40-section technical specification: [`PROJECT_DOCUMENTATION.md`](file:///d:/FISH/PROJECT_DOCUMENTATION.md).
 
-- **Phase 3: Machine Learning Training & Evaluation** — **COMPLETED**
-  - Evaluated baselines (Majority PR-AUC: 0.1142; Current-DO PR-AUC: 0.6149).
+- **Phase 3: Machine Learning Training & Evaluation** — **IN PROGRESS (CALIBRATING BASELINE REPORTING)**
+  - Evaluated baselines (Majority PR-AUC: 0.1142; Current-DO Boolean Threshold F1: 0.6257; Current-DO Ranking PR-AUC: 0.6149).
   - Evaluated 3 feature configurations (Config A: Current, Config B: Current + History, Config C: DO History).
   - Executed leak-free temporal holdout (80% train / 20% test per pond with 2h purge gap).
   - Evaluated 5-fold GroupKFold unseen-pond generalization across all 17 ponds.
-  - Selected Random Forest (PR-AUC 0.7420–0.7471, F1 0.6233–0.6602, Specificity 91.2%–93.1%) as primary candidate, with XGBoost as high-recall alternative (PR-AUC 0.7353–0.7574, Recall 79.3%–79.8%).
+  - Evaluated operational trade-offs: XGBoost Config C achieved highest PR-AUC (0.7574); Random Forest Config C achieved highest F1 (0.6602) and specificity (93.11%), producing fewer false alarms (504 FPs) at default threshold; Logistic Regression Config B provided highest recall (89.93%).
   - Serialized model artifacts under `models/` with metadata specification.
   - Detailed report: [`PHASE_3_REPORT.md`](file:///d:/FISH/PHASE_3_REPORT.md).
   - Beginner guide: [`PHASE_3_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_3_BEGINNER_GUIDE.md).

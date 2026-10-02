@@ -42,9 +42,11 @@ In machine learning, mathematical notation is commonly used to describe data:
 
 A **baseline** is a simple, intuitive benchmark model used to set the minimum standard of performance.
 - Any sophisticated machine learning model (like Random Forest or XGBoost) is only useful if it proves to be significantly better than a simple common-sense rule.
-- In ShinerAI, we evaluated two baselines:
+- In ShinerAI, we evaluated two distinct baselines:
   1. **Majority Baseline:** A "naive" model that always predicts `SAFE (0)` for every pond, because 87.5% of the dataset is safe.
-  2. **Current-DO Baseline:** A threshold baseline based strictly on training data optimization: searching training observations showed that sounding an alarm whenever $\text{current\_do} \le 4.2\text{ mg/L}$ maximized training F1-score.
+  2. **Current-DO Baselines:**
+     - **Current-DO Threshold Baseline (DO <= 4.2 mg/L):** A direct Boolean decision rule derived strictly from training data optimization (threshold 4.2 mg/L maximized training F1-score; zero test data used). On the holdout test set, it achieves Recall = 70.73%, Precision = 56.10%, Specificity = 92.87%, and F1 = 0.6257 (catching 667 low-DO events with 522 false alarms).
+     - **Current-DO Ranking Baseline (1-D Logistic):** A continuous 1-D model evaluating the rank-ordering capability of instantaneous DO across all thresholds (PR-AUC = 0.6149, ROC-AUC = 0.9024). At its default balanced threshold ($p=0.50$, alerting whenever DO <= 5.93 mg/L), it achieves Recall = 89.61%, Precision = 30.19%, Specificity = 73.30%, and F1 = 0.4516 (catching 845 events with 1,954 false alarms).
 
 ---
 
@@ -86,7 +88,7 @@ This is why **Accuracy is the wrong metric** for early-warning systems.
 
 For an early-warning system:
 - **True Positive (TP):** The model warned of low DO, and low DO actually occurred. (Success: early warning issued before hypoxia).
-- **False Positive (FP):** The model warned of low DO, but the pond stayed healthy. (False alarm: aerator ran unnecessarily, wasting electricity).
+- **False Positive (FP):** The model warned of low DO, but the pond stayed healthy. (False alarm: alert triggered when water remained safe, leading to unnecessary inspection or intervention).
 - **False Negative (FN):** The model said safe, but the pond crashed below 3.0 mg/L. (Missed event: impending low-DO occurred without alert).
 - **True Negative (TN):** The model said safe, and the pond stayed safe. (Normal operation).
 
@@ -111,6 +113,8 @@ From these definitions:
 
 A confusion matrix is a simple $2 \times 2$ grid that displays the exact counts of True Negatives, False Positives, False Negatives, and True Positives.
 For our temporal test set (8,261 total examples, with 943 low-DO events):
+- **Current-DO Threshold Baseline (DO <= 4.2 mg/L):** Caught **667 low-DO events** (70.7% recall) with 522 false alarms.
+- **Current-DO Ranking Baseline (1-D Logistic at $p=0.50$):** Caught **845 low-DO events** (89.6% recall) with 1,954 false alarms.
 - **Random Forest (Config B):** Caught **718 low-DO events** (76.1% recall) with 643 false alarms.
 - **Random Forest (Config C):** Caught **713 low-DO events** (75.6% recall) with only 504 false alarms (lowest among ML models).
 - **XGBoost (Config B):** Caught **748 low-DO events** (79.3% recall) with 835 false alarms.
@@ -127,9 +131,9 @@ We evaluated three classical model families across three feature sets. No single
    - Excellent all-around ranking quality, catching 79.8% of low-DO events with 698 false alarms.
 2. **Random Forest (Config C - DO History Only):**
    - **Highest F1-score (0.6602) and Specificity (93.11%).**
-   - Strongest at minimizing false alarms (504 false positives) at the standard $p=0.50$ decision threshold, saving electricity while still catching 75.6% of events.
+   - Strongest at minimizing false alarms (504 false positives) at the standard $p=0.50$ decision threshold, producing fewer false alarms which could reduce unnecessary interventions in a deployment where alerts trigger aeration, while still catching 75.6% of events.
 3. **Logistic Regression (Config B - Full History):**
    - **High-Recall alternative (89.93% recall).**
-   - Useful when missed events carry catastrophic consequences and operators are willing to tolerate frequent false alarms (2,158 false alarms).
+   - Useful when missed events carry severe operational consequences and operators are willing to tolerate frequent false alarms (2,158 false alarms).
 
 **Takeaway:** The recent temporal trajectory of DO provides additional predictive information beyond current measurements alone. A consistent improvement was observed across the three tested model families when historical telemetry was included.
