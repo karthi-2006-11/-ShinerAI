@@ -196,10 +196,12 @@ To make ShinerAI feel deeply connected to aquaculture while maintaining strict s
    - **Schooling Flocking Dynamics:** Fish are grouped into cohorts. Each fish computes steering forces toward its group centroid (cohesion), away from immediate neighbors (separation), and in the general group heading (alignment).
    - **Interactive Group Escape Physics:** The canvas tracks cursor movement. When the mouse approaches within 180–260 pixels, nearby fish sense the disturbance, accelerate smoothly away with organic scatter, and gradually decelerate back to calm slow swimming once the cursor departs.
 
-3. **Ensuring 100% Text Readability (WCAG Compliance):**  
+3. **Ensuring 100% Text Readability (WCAG Compliance) & Aquatic Typography:**  
    - Background canvas has `pointer-events: none` and `aria-hidden="true"` so it never blocks clicks or interferes with screen readers.
-   - All dashboard cards use **genuine glassmorphism** with a refined translucent gradient (`rgba(255, 255, 255, 0.22)` to `0.15`), `backdrop-filter: blur(22px) saturate(115%)`, subtle readability veil (`rgba(235, 248, 255, 0.08)`), and white inner borders (`rgba(255, 255, 255, 0.30)`).
-   - Deep ink primary text (`#071522`) and secondary text (`#1f3b50`) with soft white micro-shadows (`text-shadow: 0 1px 1px rgba(255, 255, 255, 0.45)`) guarantee crisp, high-contrast readability across all cards, allowing goldfish, swaying plants, and rising bubbles to remain clearly visible *through* the cards without visual clutter.
+   - The top header uses a **floating frosted glass navbar** (`backdrop-filter: blur(16px)`, rounded corners, subtle aquatic cyan edge highlight) featuring a custom vector wordmark ("ShinerAI" with hydrodynamic curves, bubble dot over 'i', tech cyan "AI", and compact subtitle).
+   - All dashboard cards use **genuine glassmorphism** with a refined translucent gradient (`rgba(255, 255, 255, 0.20)` to `0.12`), `backdrop-filter: blur(22px) saturate(115%)`, subtle readability veil (`rgba(235, 248, 255, 0.06)`), and white inner borders (`rgba(255, 255, 255, 0.30)`).
+   - An **Aquatic Pearl-White Typography System** (`--glass-text-primary: #F4FBFF`, `--glass-text-strong: #FFFFFF`, `--glass-text-secondary: #C7DCE8`, `--glass-text-muted: #B7CFDC`) with subtle dark drop-shadows (`text-shadow: 0 1px 2px rgba(0, 20, 35, 0.40)`) guarantees crisp, luminous legibility across all cards, allowing goldfish, swaying plants, and rising bubbles to remain clearly visible *through* the cards.
+   - Interactive input controls maintain crisp light backgrounds (`rgba(255, 255, 255, 0.88)`) with deep ink text (`#102A3A`) for effortless data entry.
    - Automatic CPU throttling: when you switch browser tabs, the Page Visibility API (`document.hidden`) pauses the render loop, reducing battery and CPU usage to zero!
 
 ---

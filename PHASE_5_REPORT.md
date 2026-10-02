@@ -34,7 +34,7 @@ The dashboard is built using standard, lightweight web technologies without heav
 | **Logic** | Vanilla JavaScript (ES6+) | Direct asynchronous `fetch()` calls to Flask endpoints, dynamic SVG rendering, client-side validation. |
 | **Serving** | Flask Static Integration | Backend serves `frontend/` static assets directly at `GET /` and `GET /dashboard`, simplifying local deployment. |
 | **Chart** | Responsive Pure SVG | High-DPI resolution-independent vector rendering of the 2-hour trajectory with a $3.0\text{ mg/L}$ provisional threshold reference line. |
-| **Aquarium Theme** | Canvas 2D + ES6 Engine | Realistic procedural freshwater simulation (`frontend/aquarium.js`): schooling goldfish with undulating spine physics, cursor-reactive group escape physics, swaying aquatic plants, rising aerator bubbles, volumetric light shafts, and genuine glassmorphic cards (translucent gradient `rgba(255, 255, 255, 0.22)` to `0.15`, `backdrop-filter: blur(22px) saturate(115%)`, subtle readability veil `rgba(235, 248, 255, 0.08)`, deep ink text tokens `#071522` / `#1f3b50`, and frosted inner containers ensuring the aquarium simulation is visible through the cards while maintaining strict text legibility). |
+| **Aquarium Theme** | Canvas 2D + ES6 Engine | Realistic procedural freshwater simulation (`frontend/aquarium.js`): schooling goldfish with undulating spine physics, cursor-reactive group escape physics, swaying aquatic plants, rising aerator bubbles, volumetric light shafts, and genuine glassmorphic cards (translucent gradient `rgba(255, 255, 255, 0.20)` to `0.12`, `backdrop-filter: blur(22px) saturate(115%)`, subtle veil `rgba(235, 248, 255, 0.06)`, floating frosted glass navbar with custom vector wordmark, aquatic pearl-white typography tokens `--glass-text-*` with soft aquatic shadow `rgba(0, 20, 35, 0.40)`, and light high-contrast input controls `#102A3A` ensuring the aquarium simulation is visible through the cards while maintaining strict text legibility). |
 
 ---
 
@@ -44,8 +44,7 @@ The dashboard layout features a 2-column responsive workspace that gracefully ad
 
 ```
 +-----------------------------------------------------------------------------------------+
-| [RESEARCH PROTOTYPE] ShinerAI                                                           |
-| AI-Based Early Warning System for Low Dissolved Oxygen in Fish Farms                    |
+| [Shiner(bubble)AI] | FISH-FARM EARLY WARNING (Floating Frosted Glass Navbar)            |
 | Status: ● API Connected                     Active Model: XGBoost (xgboost_config_c.joblib) |
 +-----------------------------------------------------------------------------------------+
 | DEMO SCENARIOS (Evaluated Test Cases):                                                  |
@@ -72,9 +71,9 @@ The dashboard layout features a 2-column responsive workspace that gracefully ad
 ```
 
 ### Key UI Sections Implemented:
-1. **Header & Live Health Monitor:** Dynamic connection badge querying `GET /health` with live retry logic.
+1. **Floating Frosted Glass Navbar & Brand Wordmark:** Compact sticky header with a custom vector wordmark featuring pearl-to-sky letterforms, luminous bubble dot over the "i", tech cyan "AI", clean subtitle `FISH-FARM EARLY WARNING`, and live API/model status pills.
 2. **Demo Scenarios:** One-click loading of evaluated holdout test observations representing both diurnal extremes (SAFE Case Study — Rising DO During Daytime vs. AT_RISK Case Study — Declining DO During Nighttime).
-3. **Pond Telemetry Input Panel:** Inputs for Pond ID, ISO timestamp, Current DO, and 8 historical 15-minute lags.
+3. **Pond Telemetry Input Panel:** High-contrast form inputs for Pond ID, ISO timestamp, Current DO, and 8 historical 15-minute lags.
 4. **Interactive SVG Trajectory Chart:** Visualizes the 9 discrete readings from $T-120\text{m}$ to $T$, including the provisional $3.0\text{ mg/L}$ hypoxia boundary line.
 5. **AI Risk Assessment Panel:** Displays binary classification (`SAFE` vs `AT_RISK`), calibrated probability (e.g. 6.7% vs 93.4%), probability track with $50\%$ decision threshold indicator, and clear advisory messages.
 6. **Local SHAP Explanation Panel:** Formats feature attributions with human-readable labels, positive/negative contributions, direction badges (`↑ Toward AT_RISK`, `↓ Toward SAFE`), and lists of primary drivers.
@@ -82,14 +81,15 @@ The dashboard layout features a 2-column responsive workspace that gracefully ad
 8. **Model Information Panel:** Summarizes model architecture, feature configuration, 80/20 temporal holdout split with 2-hour purge, and validation metrics.
 9. **Research Disclaimers:** Persistent caveats stating that early warnings apply to water DO dynamics and do not prove biological causation.
 
-### 3.1 Interactive Realistic Aquarium Theme Background
+### 3.1 Interactive Realistic Aquarium Theme Background & Aquatic Typography
 To create an immersive, context-appropriate aquaculture aesthetic while safeguarding scientific clarity and WCAG accessibility:
 - **Procedural Canvas 2D Engine (`frontend/aquarium.js`):** Lightweight, zero-dependency HTML5 Canvas engine rendering realistic underwater pond dynamics.
 - **Realistic Fish Population & Flocking:** Simulates 42 realistic goldfish on desktop (26 on tablet, 16 on mobile) organized into 5 loosely schooling groups governed by boid-style cohesion, separation, alignment, and wandering behaviors.
 - **Anatomical Undulation:** Multi-joint spine kinematics with wave-driven sinusoidal undulation and flowing translucent caudal, dorsal, and pectoral fins across four distinct natural coloration phenotypes (deep orange, golden amber, vermilion, and pearl-scale).
 - **Group Escape Physics:** Interactive awareness zones (`mouseNoticeRadius: 260px`, `mouseFleeRadius: 180px`, `mousePanicRadius: 80px`). Approaching cursor movements cause nearby fish and schooling cohorts to smoothly turn away, accelerate with organic dispersion, and decelerate back to calm wandering upon cursor departure.
 - **Environmental Flora & Aeration:** Multi-layered swaying aquatic plants (Vallisneria ribbons and broad Amazon swords), rising aerator micro-bubbles with buoyant physics and horizontal jitter, volumetric sunlight shafts, and subtle surface caustics.
-- **Glassmorphic Contrast Guarantee:** Dashboard cards use 94% opaque white backgrounds (`rgba(255, 255, 255, 0.94)`) with `backdrop-filter: blur(14px)`, providing pristine text contrast (WCAG AAA) while allowing underwater fish and vegetation movement to remain visible in negative space.
+- **Floating Frosted Glass Navbar:** Sticky header with rounded corners, translucent backdrop blur, subtle aquatic cyan bottom highlight, and custom vector "ShinerAI" wordmark.
+- **Aquatic Pearl-White Typography System:** Headings, captions, metrics, and tables utilize luminous pearl-white and ice-blue tokens (`#F4FBFF`, `#FFFFFF`, `#C7DCE8`, `#B7CFDC`) with subtle dark drop-shadow (`0 1px 2px rgba(0, 20, 35, 0.40)`), while interactive form inputs retain light backgrounds (`rgba(255, 255, 255, 0.88)`) with dark ink text (`#102A3A`) for optimal readability against moving aquatic scenery.
 - **Accessibility & Battery Conservation:** Fixed background is tagged `aria-hidden="true"` and `pointer-events: none` to prevent screen reader noise and click interception; automatically throttles to zero CPU/GPU overhead when the tab is backgrounded via Page Visibility API (`document.hidden`); and respects `@media (prefers-reduced-motion: reduce)`.
 
 ---

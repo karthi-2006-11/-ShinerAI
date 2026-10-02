@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShinerAI — Early Warning System for Low Dissolved Oxygen</title>
+    <title>ShinerAI — AI-Based Early Warning System for Low Dissolved Oxygen</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="aquarium-theme">
@@ -13,15 +13,43 @@
         <div id="aquarium-overlay"></div>
     </div>
 
-    <!-- Top Header -->
-    <header class="app-header" role="banner">
-        <div class="header-content container">
-            <div class="brand">
-                <div class="brand-badge">RESEARCH PROTOTYPE</div>
-                <h1 class="brand-title">ShinerAI</h1>
-                <p class="brand-subtitle">AI-Based Early Warning System for Low Dissolved Oxygen in Fish Farms</p>
+    <!-- Floating Glass Navbar with Custom ShinerAI Wordmark -->
+    <header class="app-navbar" role="banner">
+        <div class="navbar-container container">
+            <div class="navbar-brand">
+                <a href="/" class="brand-link" aria-label="ShinerAI Home">
+                    <svg class="brand-wordmark-svg" viewBox="0 0 145 34" width="145" height="34" role="img" aria-label="ShinerAI">
+                        <title>ShinerAI</title>
+                        <defs>
+                            <linearGradient id="shinerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#FFFFFF" />
+                                <stop offset="60%" stop-color="#F4FBFF" />
+                                <stop offset="100%" stop-color="#BAE6FD" />
+                            </linearGradient>
+                            <linearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#38BDF8" />
+                                <stop offset="100%" stop-color="#7DD3FC" />
+                            </linearGradient>
+                            <radialGradient id="bubbleGrad" cx="35%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#FFFFFF" />
+                                <stop offset="45%" stop-color="#BAE6FD" />
+                                <stop offset="100%" stop-color="#0284C7" />
+                            </radialGradient>
+                            <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feDropShadow dx="0" dy="1.5" stdDeviation="1.2" flood-color="#021626" flood-opacity="0.45" />
+                            </filter>
+                        </defs>
+                        <g filter="url(#subtleGlow)">
+                            <text x="2" y="26" class="wordmark-text-shiner">Shiner</text>
+                            <text x="91" y="26" class="wordmark-text-ai">AI</text>
+                            <circle cx="37.5" cy="10" r="3.2" fill="url(#bubbleGrad)" />
+                            <circle cx="36.5" cy="9" r="1.1" fill="#FFFFFF" opacity="0.9" />
+                        </g>
+                    </svg>
+                </a>
+                <span class="brand-subtitle">Fish-Farm Early Warning</span>
             </div>
-            <div class="header-status">
+            <div class="navbar-status">
                 <div id="apiStatusBadge" class="status-badge status-checking" role="status" aria-live="polite">
                     <span class="status-dot"></span>
                     <span id="apiStatusText" class="status-text">Checking API...</span>
