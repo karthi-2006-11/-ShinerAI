@@ -308,7 +308,8 @@ body {
     color: var(--text-muted);
 }
 
-/* Two-column Workspace Grid */
+/* Independent Two-Column Dashboard Layout */
+.dashboard-columns,
 .workspace-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -316,15 +317,43 @@ body {
     align-items: start;
 }
 
+.dashboard-column,
+.column-left,
+.column-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-width: 0;
+}
+
+.dashboard-column > .card,
+.column-left > .card,
+.column-right > .card,
 .workspace-grid > .card {
     margin-bottom: 0;
 }
 
+/* Tablet & Mobile Responsiveness: Single-column unified flow in logical operator order */
 @media (max-width: 1024px) {
+    .dashboard-columns,
     .workspace-grid {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 1.25rem;
     }
+
+    .dashboard-column,
+    .column-left,
+    .column-right {
+        display: contents;
+    }
+
+    .order-telemetry { order: 1; }
+    .order-risk { order: 2; }
+    .order-trajectory { order: 3; }
+    .order-shap { order: 4; }
+    .order-global { order: 5; }
+    .order-model { order: 6; }
 }
 
 /* Forms & Inputs */
