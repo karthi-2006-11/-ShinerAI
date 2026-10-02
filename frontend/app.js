@@ -186,6 +186,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (infoModelName && info.model_family) {
                     infoModelName.textContent = `${info.model_family} (${info.model_artifact})`;
                 }
+                const metrics = info.held_out_test_metrics;
+                if (metrics) {
+                    const rocAucEl = document.getElementById("infoRocAuc");
+                    const prAucEl = document.getElementById("infoPrAuc");
+                    if (rocAucEl && metrics.roc_auc !== undefined) {
+                        rocAucEl.textContent = Number(metrics.roc_auc).toFixed(4);
+                    }
+                    if (prAucEl && metrics.pr_auc !== undefined) {
+                        prAucEl.textContent = Number(metrics.pr_auc).toFixed(4);
+                    }
+                }
             }
         } catch (err) {
             console.warn("Could not retrieve model specifications:", err);

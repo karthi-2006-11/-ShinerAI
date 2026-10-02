@@ -602,8 +602,8 @@ Phase 5 delivered a production-grade, accessible, and scientifically grounded us
 ### 2. User Interface Panels & Features:
 - **Header & Dynamic API Health Indicator:** Queries `GET /health` with visual status pill (`● API Connected` / `● API Offline`) and live retry controls.
 - **Demonstration Scenarios:** Provides quick-load test observations from the Phase 3 temporal holdout set:
-  - *Scenario 1: Daytime Recovery (SAFE):* Pond `ara2_0677080b`, 10:15 AM, rising DO trajectory ($2.92 \to 5.40\text{ mg/L}$), model predicts `SAFE` ($6.7\%$ risk probability).
-  - *Scenario 2: Nocturnal Depletion (AT_RISK):* Pond `ara2_0677080b`, 03:30 AM, falling DO trajectory ($5.02 \to 3.84\text{ mg/L}$), model predicts `AT_RISK` ($93.4\%$ risk probability).
+  - *SAFE Case Study — Rising DO During Daytime:* Pond `ara2_0677080b`, 10:15 AM, rising DO trajectory ($2.92 \to 5.40\text{ mg/L}$), model predicts `SAFE` ($6.7\%$ risk probability).
+  - *AT_RISK Case Study — Declining DO During Nighttime:* Pond `ara2_0677080b`, 03:30 AM, falling DO trajectory ($5.02 \to 3.84\text{ mg/L}$), model predicts `AT_RISK` ($93.4\%$ risk probability).
 - **Pond Telemetry Input Panel:** Validates pond ID, ISO timestamp, current DO ($T$), and 8 discrete 15-minute historical lags ($T-120\text{m} \dots T-15\text{m}$).
 - **2-Hour DO Trajectory Chart:** Pure responsive SVG chart rendering observed telemetry across 9 discrete temporal points, with a prominent dashed horizontal reference line at $3.0\text{ mg/L}$ (provisional research threshold).
 - **AI Risk Assessment Panel:** Renders binary state (`SAFE` in calm green vs. `AT_RISK` in alert crimson), model-estimated probability percentage, visual probability meter with 50.0% decision threshold indicator, and clear operator advisories.
@@ -612,7 +612,7 @@ Phase 5 delivered a production-grade, accessible, and scientifically grounded us
 - **Scientific Guardrails & Scope:** Persistent disclosures stating that the system predicts water hypoxia events ($\text{DO} < 3.0\text{ mg/L}$ in 2 hours), does not predict fish disease or mortality, and uses a provisional research threshold.
 
 ### 3. Verification & Automated Test Suite:
-- **76 total automated tests** passing with 100% success rate (59 from Phases 1–4 + 17 dedicated Phase 5 tests in [`tests/test_phase5_frontend.py`](file:///d:/FISH/tests/test_phase5_frontend.py)).
+- **77 total automated tests** passing with 100% success rate (59 from Phases 1–4 + 18 dedicated Phase 5 tests in [`tests/test_phase5_frontend.py`](file:///d:/FISH/tests/test_phase5_frontend.py)).
 - **Complete End-to-End Verification (Steps A through M):** Validated page serving, health polling, SAFE prediction, AT_RISK prediction, SHAP explanation rendering, boundary condition rejection (`current_do < 3.0 mg/L` returns HTTP 400 `ALREADY_LOW_DO`), and clean error handling without traceback exposure.
 
 ---
@@ -625,7 +625,7 @@ All five research and development phases of ShinerAI are complete, fully verifie
 2. **Phase 2 (Feature Engineering & Leakage-Free Dataset Construction):** Engineered strictly backward-looking lag features and strictly forward-looking binary early warning labels with zero data leakage.
 3. **Phase 3 (Machine Learning Training, Validation & Evaluation):** Trained and benchmarked 3 model families (Logistic Regression, Random Forest, XGBoost) across 3 feature configurations using 80/20 chronological holdout with 2-hour purge gap and 5-fold GroupKFold cross-validation.
 4. **Phase 4 (Model Serving, Explainability & REST API):** Implemented global and local SHAP explainability and a robust modular Flask REST backend (`/health`, `/model-info`, `/predict`, `/explain`).
-5. **Phase 5 (Dashboard, Frontend Integration & Final E2E Verification):** Delivered a responsive, accessible web dashboard, SVG trajectory charting, and complete end-to-end integration verified by 76 passing automated tests.
+5. **Phase 5 (Dashboard, Frontend Integration & Final E2E Verification):** Delivered a responsive, accessible web dashboard, SVG trajectory charting, and complete end-to-end integration verified by 77 passing automated tests.
 
 ---
 

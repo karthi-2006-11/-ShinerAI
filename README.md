@@ -67,9 +67,9 @@ By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fi
   - Developed a lightweight, accessible, and responsive web dashboard in `frontend/` using pure semantic HTML5, vanilla CSS3, and native JavaScript (ES6+).
   - Flask backend seamlessly serves the static dashboard directly at `GET /` and `GET /dashboard` while maintaining standard REST API discovery endpoints.
   - Implemented dynamic 2-hour DO trajectory visualization in pure SVG with a prominent $3.0\text{ mg/L}$ provisional hypoxia threshold reference line.
-  - Built-in demonstration scenarios (Daytime Recovery vs. Nocturnal Depletion) loaded directly from the evaluated temporal holdout set.
+  - Built-in demonstration scenarios (SAFE Case Study — Rising DO During Daytime vs. AT_RISK Case Study — Declining DO During Nighttime) loaded directly from the evaluated temporal holdout set.
   - Interactive prediction (`POST /predict`) and local SHAP explainability (`POST /explain`) with direction indicators (`↑ Toward AT_RISK`, `↓ Toward SAFE`).
-  - Automated test suite expanded to 76 tests with 100% pass rate.
+  - Automated test suite expanded to 77 tests with 100% pass rate.
   - Detailed report: [`PHASE_5_REPORT.md`](file:///d:/FISH/PHASE_5_REPORT.md).
   - Beginner guide: [`PHASE_5_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_5_BEGINNER_GUIDE.md).
 

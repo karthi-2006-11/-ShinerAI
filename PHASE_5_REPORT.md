@@ -48,7 +48,7 @@ The dashboard layout features a 2-column responsive workspace that gracefully ad
 | Status: ● API Connected                     Active Model: XGBoost (xgboost_config_c.joblib) |
 +-----------------------------------------------------------------------------------------+
 | DEMO SCENARIOS (Evaluated Test Cases):                                                  |
-| [ Scenario 1: Daytime Recovery (SAFE) ]   [ Scenario 2: Nocturnal Depletion (AT_RISK) ] |
+| [ SAFE Case Study — Rising DO During Daytime ]   [ AT_RISK Case Study — Declining DO During Nighttime ] |
 +------------------------------------------------------------+----------------------------+
 | LEFT COLUMN                                                | RIGHT COLUMN               |
 | 1. Pond Telemetry Input Panel                              | 3. AI Risk Assessment      |
@@ -72,7 +72,7 @@ The dashboard layout features a 2-column responsive workspace that gracefully ad
 
 ### Key UI Sections Implemented:
 1. **Header & Live Health Monitor:** Dynamic connection badge querying `GET /health` with live retry logic.
-2. **Demo Scenarios:** One-click loading of evaluated holdout test observations representing both diurnal extremes (Daytime Recovery vs. Nocturnal Depletion).
+2. **Demo Scenarios:** One-click loading of evaluated holdout test observations representing both diurnal extremes (SAFE Case Study — Rising DO During Daytime vs. AT_RISK Case Study — Declining DO During Nighttime).
 3. **Pond Telemetry Input Panel:** Inputs for Pond ID, ISO timestamp, Current DO, and 8 historical 15-minute lags.
 4. **Interactive SVG Trajectory Chart:** Visualizes the 9 discrete readings from $T-120\text{m}$ to $T$, including the provisional $3.0\text{ mg/L}$ hypoxia boundary line.
 5. **AI Risk Assessment Panel:** Displays binary classification (`SAFE` vs `AT_RISK`), calibrated probability (e.g. 6.7% vs 93.4%), probability track with $50\%$ decision threshold indicator, and clear advisory messages.
@@ -134,7 +134,7 @@ sequenceDiagram
 
 To allow immediate inspection of model behavior without requiring manual entry of 11 values, two real observations from the Phase 3 temporal holdout set are built into the interface:
 
-### Scenario 1: Daytime Recovery (SAFE)
+### Scenario 1: SAFE Case Study — Rising DO During Daytime
 - **Pond:** `ara2_0677080b`
 - **Timestamp:** `2026-01-26T10:15:00`
 - **Current DO:** $5.40\text{ mg/L}$
@@ -143,7 +143,7 @@ To allow immediate inspection of model behavior without requiring manual entry o
 - **Model Output:** `SAFE`, Risk Probability: $6.67\%$ (Below 50% threshold).
 - **SHAP Explanation:** Daytime `minute_of_day` ($615.0$, $\text{SHAP} = -1.1596$) and high `current_do` ($5.40$, $\text{SHAP} = -0.6279$) pull risk strongly downward.
 
-### Scenario 2: Nocturnal Depletion (AT_RISK)
+### Scenario 2: AT_RISK Case Study — Declining DO During Nighttime
 - **Pond:** `ara2_0677080b`
 - **Timestamp:** `2026-01-26T03:30:00`
 - **Current DO:** $3.84\text{ mg/L}$
@@ -178,13 +178,13 @@ All 13 verification criteria mandated in the Phase 5 protocol (A through M) were
 
 ## 7. Automated Test Suite Results
 
-The automated regression suite was expanded to include 17 dedicated Phase 5 tests in [`tests/test_phase5_frontend.py`](file:///d:/FISH/tests/test_phase5_frontend.py). All existing unit and integration tests from Phases 1–4 continue to pass with zero regressions:
+The automated regression suite was expanded to include 18 dedicated Phase 5 tests in [`tests/test_phase5_frontend.py`](file:///d:/FISH/tests/test_phase5_frontend.py). All existing unit and integration tests from Phases 1–4 continue to pass with zero regressions:
 
 ```
 ============================= test session starts =============================
 platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
 rootdir: D:\FISH, configfile: pytest.ini
-collected 76 items
+collected 77 items
 
 tests/test_cleaning_pipeline.py .........................             [ 11%]
 tests/test_data_pipeline.py ....................................      [ 25%]
@@ -195,10 +195,10 @@ tests/test_phase4_api.py ............................................ [ 72%]
 tests/test_phase4_explainability.py ....................              [ 77%]
 tests/test_phase5_frontend.py ....................................... [100%]
 
-======================= 76 passed, 3 warnings in 19.63s =======================
+======================= 77 passed, 3 warnings in 8.66s ========================
 ```
 
-**Total Pass Rate:** **76 / 76 tests (100%)**
+**Total Pass Rate:** **77 / 77 tests (100%)**
 
 ---
 

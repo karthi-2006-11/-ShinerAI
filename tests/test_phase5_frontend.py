@@ -154,6 +154,16 @@ def test_html_contains_all_required_form_fields():
     assert 'id="shapTableBody"' in html
     assert 'id="globalImportanceChart"' in html
 
+    # Demo scenario labels
+    assert 'SAFE Case Study — Rising DO During Daytime' in html
+    assert 'AT_RISK Case Study — Declining DO During Nighttime' in html
+
+    # Model specifications table
+    assert '0.9162' in html
+    assert '0.7574' in html
+    assert '0.9458' not in html
+    assert '0.7718' not in html
+
 
 def test_html_accessibility_elements():
     """Verify labels, ARIA landmarks, and accessibility semantics."""
@@ -333,4 +343,15 @@ def test_timestamp_derives_hour_and_minute(client, demo_safe_payload):
     # '2026-01-26T10:15:00' -> hour 10, minute 10*60 + 15 = 615
     assert contrib_features["hour_of_day"] == 10.0
     assert contrib_features["minute_of_day"] == 615.0
+
+
+def test_model_info_metrics_consistency(client):
+    """Verify /model-info returns exact frozen Phase 3 metrics (ROC-AUC 0.9162, PR-AUC 0.7574)."""
+    response = client.get("/model-info")
+    assert response.status_code == 200
+    data = response.get_json()
+    metrics = data["held_out_test_metrics"]
+    assert metrics["roc_auc"] == 0.9162
+    assert metrics["pr_auc"] == 0.7574
+
 

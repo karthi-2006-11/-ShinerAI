@@ -46,12 +46,12 @@
                 <div class="demo-actions">
                     <button type="button" id="btnDemoSafe" class="btn-demo btn-demo-safe">
                         <span class="demo-tag">Scenario 1 (SAFE)</span>
-                        <strong>Daytime Recovery</strong>
+                        <strong>SAFE Case Study — Rising DO During Daytime</strong>
                         <span class="demo-desc">10:15 AM • Rising DO trajectory (2.92 → 5.40 mg/L)</span>
                     </button>
                     <button type="button" id="btnDemoAtRisk" class="btn-demo btn-demo-risk">
                         <span class="demo-tag">Scenario 2 (AT_RISK)</span>
-                        <strong>Nocturnal Depletion</strong>
+                        <strong>AT_RISK Case Study — Declining DO During Nighttime</strong>
                         <span class="demo-desc">03:30 AM • Falling DO trajectory (5.02 → 3.84 mg/L)</span>
                     </button>
                     <button type="button" id="btnClearInputs" class="btn-demo btn-demo-clear">
@@ -387,11 +387,11 @@
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Temporal Holdout ROC-AUC</span>
-                                <span class="info-value">0.9458</span>
+                                <span id="infoRocAuc" class="info-value">0.9162</span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Temporal Holdout PR-AUC</span>
-                                <span class="info-value">0.7718</span>
+                                <span id="infoPrAuc" class="info-value">0.7574</span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Temporal Split Strategy</span>
