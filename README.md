@@ -43,7 +43,7 @@ By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fi
 - **Formal Project Documentation** — **COMPLETED**
   - Comprehensive 40-section technical specification: [`PROJECT_DOCUMENTATION.md`](file:///d:/FISH/PROJECT_DOCUMENTATION.md).
 
-- **Phase 3: Machine Learning Training & Evaluation** — **IN PROGRESS (CALIBRATING BASELINE REPORTING)**
+- **Phase 3: Machine Learning Training & Evaluation** — **COMPLETED**
   - Evaluated baselines (Majority PR-AUC: 0.1142; Current-DO Boolean Threshold F1: 0.6257; Current-DO Ranking PR-AUC: 0.6149).
   - Evaluated 3 feature configurations (Config A: Current, Config B: Current + History, Config C: DO History).
   - Executed leak-free temporal holdout (80% train / 20% test per pond with 2h purge gap).
@@ -53,7 +53,16 @@ By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fi
   - Detailed report: [`PHASE_3_REPORT.md`](file:///d:/FISH/PHASE_3_REPORT.md).
   - Beginner guide: [`PHASE_3_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_3_BEGINNER_GUIDE.md).
 
-- **Phase 4: System Integration & Inference Service** — **PENDING USER APPROVAL**
+- **Phase 4: Model Explainability & Flask Backend REST API** — **COMPLETED**
+  - Implemented SHAP TreeExplainer pipeline (`src/explainability_pipeline.py`) computing global feature importance (1,000 test observations) and local waterfall/bar explanations for representative SAFE and AT_RISK cases.
+  - Confirmed `current_do` as rank #1 driver, diurnal markers (`minute_of_day`, `hour_of_day`) as #2 and #3, and recent trajectory lags as #4 and #5.
+  - Built production Flask REST API (`backend/`) with strict input validation, boundary condition enforcement ($\text{DO} \ge 3.0\text{ mg/L}$), and four endpoints (`/health`, `/model-info`, `/predict`, `/explain`).
+  - Supported configurable model artifact loading (`MODEL_ARTIFACT_PATH`) between XGBoost Config C and Random Forest Config C.
+  - Detailed report: [`PHASE_4_REPORT.md`](file:///d:/FISH/PHASE_4_REPORT.md).
+  - Beginner guide: [`PHASE_4_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_4_BEGINNER_GUIDE.md).
+  - REST API specification: [`docs/API.md`](file:///d:/FISH/docs/API.md).
+
+- **Phase 5: Interactive Dashboard & UI** — **PENDING USER APPROVAL**
 
 ## Dataset Health & Reconciliation Summary
 
@@ -144,6 +153,14 @@ Label: AT_RISK (1)                    Did sensor monitor full 2h?
 ```text
 fish-farm-early-warning/
 │
+├── backend/                         # Phase 4 Modular Flask REST API
+│   ├── __init__.py                  # Package marker & app export
+│   ├── app.py                       # Application factory & REST routes (/health, /predict, /explain)
+│   ├── config.py                    # Environment configuration & feature schema
+│   ├── validation.py                # Payload validation & boundary condition enforcement
+│   ├── model_service.py             # Read-only model artifact loading & inference
+│   └── explainability.py            # Local SHAP TreeExplainer service
+│
 ├── data/
 │   ├── raw/
 │   │   └── csv/                     # Original 17 pond CSVs + 5 metadata CSVs (READ-ONLY)
@@ -151,10 +168,15 @@ fish-farm-early-warning/
 │       ├── cleaned_pond_data.csv    # Cleaned time series with QC status & segment IDs
 │       └── ml_ready_dataset.csv     # 41,277 supervised learning examples (37 columns)
 │
+├── docs/
+│   └── API.md                       # Formal REST API specification
+│
 ├── models/
 │   ├── logistic_regression.joblib   # Linear high-recall candidate
-│   ├── random_forest.joblib         # Random Forest candidate (high specificity & F1)
-│   ├── xgboost.joblib               # XGBoost candidate (highest PR-AUC & sensitivity)
+│   ├── random_forest.joblib         # Random Forest candidate (Config B)
+│   ├── xgboost.joblib               # XGBoost candidate (Config B)
+│   ├── random_forest_config_c.joblib# Config C Random Forest (highest specificity: 93.11%)
+│   ├── xgboost_config_c.joblib      # Config C XGBoost (highest PR-AUC: 0.7574, default serving)
 │   └── model_metadata.json          # Complete hyperparameters, metadata & metrics
 │
 ├── notebooks/
@@ -168,10 +190,18 @@ fish-farm-early-warning/
 │   ├── cleaning.py                  # Phase 2 cleaning, segmentation, and ML dataset pipeline
 │   ├── model_utils.py               # Phase 3 feature configs, temporal splitting, metrics
 │   ├── train.py                     # Phase 3 model training & serialization pipeline
-│   └── evaluate.py                  # Phase 3 per-pond & GroupKFold evaluation pipeline
+│   ├── evaluate.py                  # Phase 3 per-pond & GroupKFold evaluation pipeline
+│   └── explainability_pipeline.py   # Phase 4 global & local SHAP explainability pipeline
 │
 ├── results/
 │   ├── figures/                     # Standalone Matplotlib figures
+│   │   ├── explainability/          # Phase 4 global and local SHAP plots
+│   │   │   ├── global_feature_importance_xgb_config_c.png
+│   │   │   ├── global_feature_importance_rf_config_c.png
+│   │   │   ├── local_explanation_safe_xgb_config_c.png
+│   │   │   ├── local_explanation_at_risk_xgb_config_c.png
+│   │   │   ├── local_explanation_safe_rf_config_c.png
+│   │   │   └── local_explanation_at_risk_rf_config_c.png
 │   │   ├── data_flow_diagram.png    # End-to-end Phase 1-2 pipeline architecture
 │   │   ├── ml_pipeline_diagram.png  # Phase 3 ML workflow architecture
 │   │   ├── roc_curve_comparison.png # ROC curves across models
@@ -184,6 +214,11 @@ fish-farm-early-warning/
 │   │   └── at_risk_percentage_by_pond.png
 │   │
 │   └── reports/                     # Tabular CSV and JSON reports
+│       ├── explainability/          # Phase 4 SHAP rankings & case study JSON summaries
+│       │   ├── global_importance_xgb_config_c.csv
+│       │   ├── global_importance_rf_config_c.csv
+│       │   ├── local_explanations_summary.json
+│       │   └── explainability_report.md
 │       ├── final_model_selection.csv# Neutral model selection & trade-off matrix
 │       ├── model_comparison.csv     # Phase 3 model benchmark results across configurations
 │       ├── model_comparison.json    # Machine-readable model benchmarks
@@ -206,18 +241,22 @@ fish-farm-early-warning/
 │   ├── test_cleaning_pipeline.py    # Phase 2 cleaning & dataset schema tests (9 tests)
 │   ├── test_no_data_leakage.py      # Phase 2 future leakage & target window tests (5 tests)
 │   ├── test_phase3_splits.py        # Phase 3 temporal holdout & purge tests (3 tests)
-│   └── test_phase3_models.py        # Phase 3 model, artifact & metric tests (5 tests)
+│   ├── test_phase3_models.py        # Phase 3 model, artifact & metric tests (5 tests)
+│   ├── test_phase4_api.py           # Phase 4 REST API & validation tests (23 tests)
+│   └── test_phase4_explainability.py# Phase 4 SHAP artifact & service tests (4 tests)
 │
 ├── requirements.txt                 # Lightweight Python dependencies
 ├── pytest.ini                       # Pytest path configuration
 ├── README.md                        # Project landing page & quickstart
-├── PROJECT_DOCUMENTATION.md         # Formal 41-section project reference
+├── PROJECT_DOCUMENTATION.md         # Formal 42-section project reference
 ├── DATASET_AUDIT.md                 # In-depth Phase 1 audit report
 ├── QC_CLEANING_POLICY.md            # Phase 2 data cleaning governance policy
 ├── PHASE_2_REPORT.md                # Comprehensive Phase 2 execution report
 ├── PHASE_2_BEGINNER_GUIDE.md        # Beginner guide to features, labels & leakage
 ├── PHASE_3_REPORT.md                # Comprehensive Phase 3 ML execution report
-└── PHASE_3_BEGINNER_GUIDE.md        # Beginner guide to machine learning & metrics
+├── PHASE_3_BEGINNER_GUIDE.md        # Beginner guide to machine learning & metrics
+├── PHASE_4_REPORT.md                # Comprehensive Phase 4 Explainability & API report
+└── PHASE_4_BEGINNER_GUIDE.md        # Beginner guide to SHAP explainability & API serving
 ```
 
 ---
@@ -239,22 +278,29 @@ python src/audit.py
 python src/cleaning.py
 ```
 
-### 4. Run Phase 3 Model Training
+### 4. Run Phase 3 Model Training & Evaluation
 ```powershell
 python src/train.py
-```
-
-### 5. Run Phase 3 Model Evaluation & Visualizations
-```powershell
 python src/evaluate.py
 ```
 
-### 6. Run the Full Automated Test Suite (32 Tests)
+### 5. Run Phase 4 Explainability Pipeline
+```powershell
+python src/explainability_pipeline.py
+```
+
+### 6. Launch the Flask REST Backend API
+```powershell
+python -m backend.app
+```
+*(By default runs on `http://127.0.0.1:5000` serving `models/xgboost_config_c.joblib`)*
+
+### 7. Run the Full Automated Test Suite (59 Tests)
 ```powershell
 pytest -v
 ```
 
-### 7. Launch JupyterLab
+### 8. Launch JupyterLab
 ```powershell
 jupyter lab
 ```
@@ -268,3 +314,5 @@ Navigate to `notebooks/01_dataset_audit.ipynb` to view the interactive audit.
 2. **Zero Forward Leakage:** Feature matrices never include future observations ($t > T$).
 3. **No Synthetic Data:** Missing temporal gaps are partitioned into new segments rather than interpolated with synthetic numbers.
 4. **Scope & Physiological Caveat:** The 3.0 mg/L threshold is provisional pending species-specific biological validation; ShinerAI forecasts impending water oxygen depletion events ($\text{DO} < 3.0\text{ mg/L}$ within 2 hours), not fish disease or fish mortality.
+5. **Statistical Association vs. Causality:** SHAP attributions represent statistical predictive associations within this dataset; they do not prove biological causality.
+

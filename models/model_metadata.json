@@ -239,6 +239,74 @@
         "test_pos": 943,
         "test_neg": 7318
       }
+    },
+    "random_forest_config_c": {
+      "features": [
+        "current_do",
+        "hour_of_day",
+        "minute_of_day",
+        "do_t_minus_15",
+        "do_t_minus_30",
+        "do_t_minus_45",
+        "do_t_minus_60",
+        "do_t_minus_75",
+        "do_t_minus_90",
+        "do_t_minus_105",
+        "do_t_minus_120"
+      ],
+      "feature_count": 11,
+      "feature_configuration": "Config C (DO History Only)",
+      "metrics": {
+        "pr_auc": 0.7471,
+        "roc_auc": 0.9144,
+        "f1": 0.6602,
+        "recall": 0.7561,
+        "precision": 0.5859,
+        "specificity": 0.9311,
+        "accuracy": 0.9111,
+        "threshold": 0.5,
+        "tp": 713,
+        "fp": 504,
+        "tn": 6814,
+        "fn": 230,
+        "test_examples": 8261,
+        "test_pos": 943,
+        "test_neg": 7318
+      }
+    },
+    "xgboost_config_c": {
+      "features": [
+        "current_do",
+        "hour_of_day",
+        "minute_of_day",
+        "do_t_minus_15",
+        "do_t_minus_30",
+        "do_t_minus_45",
+        "do_t_minus_60",
+        "do_t_minus_75",
+        "do_t_minus_90",
+        "do_t_minus_105",
+        "do_t_minus_120"
+      ],
+      "feature_count": 11,
+      "feature_configuration": "Config C (DO History Only)",
+      "metrics": {
+        "pr_auc": 0.7574,
+        "roc_auc": 0.9162,
+        "f1": 0.6285,
+        "recall": 0.7975,
+        "precision": 0.5186,
+        "specificity": 0.9046,
+        "accuracy": 0.8924,
+        "threshold": 0.5,
+        "tp": 752,
+        "fp": 698,
+        "tn": 6620,
+        "fn": 191,
+        "test_examples": 8261,
+        "test_pos": 943,
+        "test_neg": 7318
+      }
     }
   },
   "random_seed": 42

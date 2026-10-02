@@ -1,0 +1,308 @@
+{
+  "safe": {
+    "test_index": 24,
+    "pond_id": "ara2_0677080b",
+    "prediction_timestamp": "2026-01-26 10:15:00",
+    "current_do": 5.4,
+    "ground_truth": "SAFE (0)",
+    "xgboost": {
+      "risk_probability": 0.0667,
+      "predicted_label": "SAFE",
+      "base_value": -0.0038551411125808954,
+      "feature_contributions": [
+        {
+          "feature": "minute_of_day",
+          "value": 615.0,
+          "shap_value": -1.1596,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "current_do",
+          "value": 5.4,
+          "shap_value": -0.6279,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "hour_of_day",
+          "value": 10.0,
+          "shap_value": -0.3339,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_120",
+          "value": 2.92,
+          "shap_value": -0.21,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_15",
+          "value": 5.15,
+          "shap_value": -0.1827,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_105",
+          "value": 3.23,
+          "shap_value": -0.1231,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_30",
+          "value": 4.87,
+          "shap_value": 0.0679,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_75",
+          "value": 3.89,
+          "shap_value": 0.0525,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_90",
+          "value": 3.72,
+          "shap_value": -0.05,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_60",
+          "value": 4.21,
+          "shap_value": -0.0385,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_45",
+          "value": 4.36,
+          "shap_value": -0.0285,
+          "direction": "toward_SAFE"
+        }
+      ]
+    },
+    "random_forest": {
+      "risk_probability": 0.0517,
+      "predicted_label": "SAFE",
+      "base_value": 0.5002327701470766,
+      "feature_contributions": [
+        {
+          "feature": "current_do",
+          "value": 5.4,
+          "shap_value": -0.1269,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "minute_of_day",
+          "value": 615.0,
+          "shap_value": -0.0994,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "hour_of_day",
+          "value": 10.0,
+          "shap_value": -0.0726,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_15",
+          "value": 5.15,
+          "shap_value": -0.0454,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_120",
+          "value": 2.92,
+          "shap_value": -0.0409,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_90",
+          "value": 3.72,
+          "shap_value": -0.02,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_105",
+          "value": 3.23,
+          "shap_value": -0.0173,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_75",
+          "value": 3.89,
+          "shap_value": -0.0121,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_30",
+          "value": 4.87,
+          "shap_value": -0.0117,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_60",
+          "value": 4.21,
+          "shap_value": -0.0033,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_45",
+          "value": 4.36,
+          "shap_value": 0.001,
+          "direction": "toward_AT_RISK"
+        }
+      ]
+    }
+  },
+  "at_risk": {
+    "test_index": 12,
+    "pond_id": "ara2_0677080b",
+    "prediction_timestamp": "2026-01-26 03:30:00",
+    "current_do": 3.84,
+    "ground_truth": "AT_RISK (1)",
+    "xgboost": {
+      "risk_probability": 0.9341,
+      "predicted_label": "AT_RISK",
+      "base_value": -0.0038551411125808954,
+      "feature_contributions": [
+        {
+          "feature": "current_do",
+          "value": 3.84,
+          "shap_value": 2.0758,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "minute_of_day",
+          "value": 210.0,
+          "shap_value": 0.3809,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_15",
+          "value": 4.05,
+          "shap_value": 0.1468,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_120",
+          "value": 5.02,
+          "shap_value": -0.109,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_105",
+          "value": 5.0,
+          "shap_value": 0.0902,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_30",
+          "value": 4.49,
+          "shap_value": 0.07,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_45",
+          "value": 4.67,
+          "shap_value": 0.0554,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_60",
+          "value": 4.69,
+          "shap_value": -0.0426,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_90",
+          "value": 4.85,
+          "shap_value": -0.0415,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_75",
+          "value": 4.73,
+          "shap_value": 0.0344,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "hour_of_day",
+          "value": 3.0,
+          "shap_value": -0.0046,
+          "direction": "toward_SAFE"
+        }
+      ]
+    },
+    "random_forest": {
+      "risk_probability": 0.9167,
+      "predicted_label": "AT_RISK",
+      "base_value": 0.5002327701470766,
+      "feature_contributions": [
+        {
+          "feature": "current_do",
+          "value": 3.84,
+          "shap_value": 0.1813,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_15",
+          "value": 4.05,
+          "shap_value": 0.1106,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_30",
+          "value": 4.49,
+          "shap_value": 0.0494,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "minute_of_day",
+          "value": 210.0,
+          "shap_value": 0.0281,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "hour_of_day",
+          "value": 3.0,
+          "shap_value": 0.0223,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_120",
+          "value": 5.02,
+          "shap_value": -0.0219,
+          "direction": "toward_SAFE"
+        },
+        {
+          "feature": "do_t_minus_45",
+          "value": 4.67,
+          "shap_value": 0.0154,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_75",
+          "value": 4.73,
+          "shap_value": 0.014,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_60",
+          "value": 4.69,
+          "shap_value": 0.0131,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_105",
+          "value": 5.0,
+          "shap_value": 0.0032,
+          "direction": "toward_AT_RISK"
+        },
+        {
+          "feature": "do_t_minus_90",
+          "value": 4.85,
+          "shap_value": 0.0009,
+          "direction": "toward_AT_RISK"
+        }
+      ]
+    }
+  }
+}

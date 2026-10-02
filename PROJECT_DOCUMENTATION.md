@@ -550,17 +550,50 @@ The model predicts **impending low-dissolved-oxygen events** ($\text{DO} < 3.0\t
 
 ---
 
-## 41. Phase 4 Starting Point
-When Phase 4 is approved, the project will transition to **System Integration & Inference Service**:
-- Package the serialized model artifacts ([`models/random_forest.joblib`](file:///d:/FISH/models/random_forest.joblib), [`models/xgboost.joblib`](file:///d:/FISH/models/xgboost.joblib)) into a lightweight inference service.
-- Build an API endpoint (FastAPI / Flask) accepting real-time pond telemetry streams and returning risk probabilities.
-- Provide operational threshold calibration for farm operators.
+## 41. Phase 4 Implementation & Validation: Explainability and Flask REST API
+
+Phase 4 transitioned the frozen Phase 3 Machine Learning models into an interpretable, operational software service:
+
+### 1. Model Explainability Pipeline (SHAP TreeExplainer):
+- **Global Feature Importance:** Evaluated on 1,000 stratified held-out test observations for both **XGBoost Config C** and **Random Forest Config C**.
+  - `current_do` ranked #1 as the primary baseline determinant across both architectures (XGB mean |SHAP|: 1.3896; RF mean |SHAP|: 0.1049).
+  - Diurnal cycle markers (`minute_of_day`, `hour_of_day`) ranked #2 and #3, capturing photosynthetic versus respiratory phases.
+  - Recent historical lags (`do_t_minus_15`, `do_t_minus_30`) ranked #4 and #5, providing trajectory trend signals.
+- **Local Instance Explanations:**
+  - Deconstructed individual predictions for representative case studies: Daytime Photosynthetic Recovery (SAFE, risk probability 6.67%) and Nocturnal Respiration Depletion (AT_RISK, risk probability 93.41%).
+  - Produced 6 publication-grade figures and 4 structured reports in `results/figures/explainability/` and `results/reports/explainability/`.
+- **Scientific & Causal Guardrail:**
+  - Feature attributions represent statistical associations within this dataset and do not prove biological causality.
+  - Historical inputs are discrete lag observations; no continuous differential rates-of-change were engineered.
+  - The system forecasts water hypoxia events ($\text{DO} < 3.0\text{ mg/L}$ in 2 hours), not fish mortality or biological disease.
+
+### 2. Modular Flask Backend Architecture:
+- Built in `backend/` (`app.py`, `config.py`, `validation.py`, `model_service.py`, `explainability.py`).
+- Four production REST endpoints:
+  - `GET /health`: Server health, model artifact, model family, threshold, UTC timestamp.
+  - `GET /model-info`: Expected 11 features, test metrics, operational trade-off guidance, scientific scope.
+  - `POST /predict`: Real-time risk probability, predicted label (`SAFE` / `AT_RISK`), binary prediction, warning flag, alert text.
+  - `POST /explain`: Real-time prediction plus local SHAP feature contributions, base value, top risk drivers, top safe drivers.
+- **Strict Boundary & Input Enforcement:** Rejects `current_do < 3.0 mg/L` with HTTP `400 Bad Request` (`status: ALREADY_LOW_DO`), enforces ISO 8601 timestamps, validates all 8 historical lags, and supports lag aliases (`do_t-15m`).
+- **Model Configurability:** Serves `models/xgboost_config_c.joblib` by default (highest PR-AUC: 0.7574, Recall: 79.75%), seamlessly switchable to `models/random_forest_config_c.joblib` (highest Specificity: 93.11%, lowest false alarms) via `MODEL_ARTIFACT_PATH`.
+
+### 3. Automated Verification:
+- **59 total automated tests** passing with 100% success rate (32 legacy tests from Phases 1–3 + 27 new tests in `tests/test_phase4_api.py` and `tests/test_phase4_explainability.py`).
 
 ---
 
-## Appendix: Dataset & Model Visualizations Reference
+## 42. Phase 5 Transition & Scope Boundaries
 
-The following figures illustrate the data distributions, pipeline architecture, and machine learning performance:
+Phase 4 is officially complete and frozen. When Phase 5 is authorized, the project will proceed to **Dashboard & User Interface**:
+- Build a lightweight web dashboard (Streamlit or frontend UI) consuming the Phase 4 Flask REST API.
+- Render pond risk gauge indicators, historical DO trajectory charts, and interactive SHAP waterfall/force explainability plots for farm operators.
+- **Scope Boundaries:** No IoT hardware, external cloud deployment, databases, or authentication will be introduced without explicit approval.
+
+---
+
+## Appendix: Dataset, Model, and Explainability Visualizations Reference
+
+The following figures illustrate the data distributions, pipeline architecture, machine learning performance, and model explainability:
 
 1. **Water Quality Parameter Distributions:**
    - Dissolved Oxygen Distribution: [`results/figures/do_distribution.png`](file:///d:/FISH/results/figures/do_distribution.png)
@@ -584,3 +617,10 @@ The following figures illustrate the data distributions, pipeline architecture, 
    - Confusion Matrix (Logistic Regression): [`results/figures/confusion_logistic_regression.png`](file:///d:/FISH/results/figures/confusion_logistic_regression.png)
    - Confusion Matrix (Random Forest): [`results/figures/confusion_random_forest.png`](file:///d:/FISH/results/figures/confusion_random_forest.png)
    - Confusion Matrix (XGBoost): [`results/figures/confusion_xgboost.png`](file:///d:/FISH/results/figures/confusion_xgboost.png)
+6. **Phase 4 Model Explainability Figures:**
+   - Global Importance (XGBoost Config C): [`results/figures/explainability/global_feature_importance_xgb_config_c.png`](file:///d:/FISH/results/figures/explainability/global_feature_importance_xgb_config_c.png)
+   - Global Importance (Random Forest Config C): [`results/figures/explainability/global_feature_importance_rf_config_c.png`](file:///d:/FISH/results/figures/explainability/global_feature_importance_rf_config_c.png)
+   - Local Waterfall (SAFE Case, XGBoost): [`results/figures/explainability/local_explanation_safe_xgb_config_c.png`](file:///d:/FISH/results/figures/explainability/local_explanation_safe_xgb_config_c.png)
+   - Local Waterfall (AT_RISK Case, XGBoost): [`results/figures/explainability/local_explanation_at_risk_xgb_config_c.png`](file:///d:/FISH/results/figures/explainability/local_explanation_at_risk_xgb_config_c.png)
+   - Local Waterfall (SAFE Case, Random Forest): [`results/figures/explainability/local_explanation_safe_rf_config_c.png`](file:///d:/FISH/results/figures/explainability/local_explanation_safe_rf_config_c.png)
+   - Local Waterfall (AT_RISK Case, Random Forest): [`results/figures/explainability/local_explanation_at_risk_rf_config_c.png`](file:///d:/FISH/results/figures/explainability/local_explanation_at_risk_rf_config_c.png)
