@@ -18,6 +18,21 @@ In aquaculture, **Dissolved Oxygen (DO)** is the single most volatile and life-c
 
 By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fish farmers ample lead time to power up mechanical aerators, start freshwater exchange pumps, or adjust feed management before fish sustain biological damage.
 
+### Authoritative Active Model Benchmark (Production Standard)
+
+The production model [`models/xgboost_config_c.joblib`](file:///d:/FISH/models/xgboost_config_c.joblib) is evaluated on the held-out temporal partition ($N = 8,261$, $943$ positive events) with a mandatory 2-hour purge gap:
+
+| Metric | Verified Value | Benchmark Detail |
+| :--- | :---: | :--- |
+| **PR-AUC (Primary)** | **0.7574** | **+0.1425 lift** over Current-DO baseline (0.6149) |
+| **ROC-AUC** | **0.9162** | High discriminatory capability across classification thresholds |
+| **F1-Score** | **0.6285** | Balanced performance at default operational decision threshold $\tau = 0.50$ |
+| **Recall (Sensitivity)** | **0.7975** | Catches 79.75% of impending hypoxic events (752 of 943) |
+| **Precision (PPV)** | **0.5186** | 752 true positives out of 1,450 total alerts |
+| **Specificity (TNR)** | **0.9046** | Correctly rejects 90.46% of normoxic intervals (6,620 of 7,318) |
+| **Accuracy** | **0.8924** | Overall classification accuracy on temporal holdout (7,372 of 8,261) |
+| **Confusion Matrix** | **TP: 752, FP: 698, TN: 6,620, FN: 191** | Evaluated on 8,261 holdout observations with 2-hour purge gap |
+
 ---
 
 ## Open & Run ShinerAI
@@ -276,7 +291,8 @@ fish-farm-early-warning/
 │   └── model_metadata.json          # Complete hyperparameters, metadata & metrics
 │
 ├── notebooks/
-│   └── 01_dataset_audit.ipynb       # Interactive walkthrough of Phase 1 audit
+│   ├── 01_dataset_audit.ipynb       # Interactive walkthrough of Phase 1 audit
+│   └── ShinerAI_Complete_ML_Pipeline.ipynb # Master ML research & reproducibility pipeline (33 sections)
 │
 ├── src/
 │   ├── __init__.py                  # Package marker
@@ -290,6 +306,13 @@ fish-farm-early-warning/
 │   └── explainability_pipeline.py   # Phase 4 global & local SHAP explainability pipeline
 │
 ├── results/
+│   ├── audit/                       # 16 Scientific audit and evidence reconciliation reports
+│   │   ├── SCIENTIFIC_AUDIT_REPORT.md   # Synthesized audit certificate & findings
+│   │   ├── MENTOR_EVIDENCE_SUMMARY.md   # Direct tabulated answers to mentor feedback
+│   │   ├── MASTER_METRIC_RECALCULATION.csv # Authoritative metric re-evaluations
+│   │   ├── METRIC_RECONCILIATION.csv    # Historical draft reconciliation table
+│   │   ├── ACTIVE_MODEL_REPRODUCTION.md # Active artifact reproduction & verification
+│   │   └── DOMAIN_CONTRIBUTION_AUDIT.md # Sensor ablation & trajectory primacy audit
 │   ├── figures/                     # Standalone Matplotlib figures
 │   │   ├── explainability/          # Phase 4 global and local SHAP plots
 │   │   │   ├── global_feature_importance_xgb_config_c.png
@@ -315,6 +338,7 @@ fish-farm-early-warning/
 │       │   ├── global_importance_rf_config_c.csv
 │       │   ├── local_explanations_summary.json
 │       │   └── explainability_report.md
+│       ├── MASTER_MODEL_EVALUATION.csv # Master evaluation table across all models/configs
 │       ├── final_model_selection.csv# Neutral model selection & trade-off matrix
 │       ├── model_comparison.csv     # Phase 3 model benchmark results across configurations
 │       ├── model_comparison.json    # Machine-readable model benchmarks
@@ -339,7 +363,9 @@ fish-farm-early-warning/
 │   ├── test_phase3_splits.py        # Phase 3 temporal holdout & purge tests (3 tests)
 │   ├── test_phase3_models.py        # Phase 3 model, artifact & metric tests (5 tests)
 │   ├── test_phase4_api.py           # Phase 4 REST API & validation tests (23 tests)
-│   └── test_phase4_explainability.py# Phase 4 SHAP artifact & service tests (4 tests)
+│   ├── test_phase4_explainability.py# Phase 4 SHAP artifact & service tests (4 tests)
+│   ├── test_phase5_frontend.py      # Phase 5 dashboard & integration tests (19 tests)
+│   └── test_audit_verification.py   # Scientific audit verification tests (7 tests)
 │
 ├── requirements.txt                 # Lightweight Python dependencies
 ├── pytest.ini                       # Pytest path configuration
@@ -394,16 +420,18 @@ python src/explainability_pipeline.py
 *Access the interactive dashboard in your browser at `http://127.0.0.1:5000/` or `http://127.0.0.1:5000/dashboard`.*  
 *(By default runs on `http://127.0.0.1:5000` serving `models/xgboost_config_c.joblib`)*
 
-### 7. Run the Full Automated Test Suite (78 Tests)
-```powershell
-.venv\Scripts\python.exe -m pytest -v
+### 7. Run the Full Automated Test Suite (85 Tests)
+```bash
+pytest -v
+# Or explicitly with the active virtual environment:
+python -m pytest -v
 ```
 
 ### 8. Launch JupyterLab
 ```powershell
 jupyter lab
 ```
-Navigate to `notebooks/01_dataset_audit.ipynb` to view the interactive audit.
+Navigate to `notebooks/ShinerAI_Complete_ML_Pipeline.ipynb` to inspect and execute the master end-to-end research workflow, or `notebooks/01_dataset_audit.ipynb` for the exploratory Phase 1 audit.
 
 ---
 
