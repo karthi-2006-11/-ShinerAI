@@ -2,7 +2,7 @@
 
 **Research Title:** AI-Based Early Warning System for Low Dissolved Oxygen in Fish Farms  
 **GitHub Repository:** [https://github.com/karthi-2006-11/-ShinerAI.git](https://github.com/karthi-2006-11/-ShinerAI.git)  
-**Formal Reference:** [`PROJECT_DOCUMENTATION.md`](file:///d:/FISH/PROJECT_DOCUMENTATION.md)
+**Formal Reference:** [`PROJECT_DOCUMENTATION.md`](PROJECT_DOCUMENTATION.md)
 
 DataSet Link - https://github.com/fish-welfare-initiative/Data-Campaign-Data.git.
 ---
@@ -18,9 +18,10 @@ In aquaculture, **Dissolved Oxygen (DO)** is the single most volatile and life-c
 
 By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fish farmers ample lead time to power up mechanical aerators, start freshwater exchange pumps, or adjust feed management before fish sustain biological damage.
 
+
 ### Authoritative Active Model Benchmark (Production Standard)
 
-The production model [`models/xgboost_config_c.joblib`](file:///d:/FISH/models/xgboost_config_c.joblib) is evaluated on the held-out temporal partition ($N = 8,261$, $943$ positive events) with a mandatory 2-hour purge gap:
+The production model [`models/xgboost_config_c.joblib`](models/xgboost_config_c.joblib) is evaluated on the held-out temporal partition ($N = 8,261$, $943$ positive events) with a mandatory 2-hour purge gap:
 
 | Metric | Verified Value | Benchmark Detail |
 | :--- | :---: | :--- |
@@ -32,6 +33,117 @@ The production model [`models/xgboost_config_c.joblib`](file:///d:/FISH/models/x
 | **Specificity (TNR)** | **0.9046** | Correctly rejects 90.46% of normoxic intervals (6,620 of 7,318) |
 | **Accuracy** | **0.8924** | Overall classification accuracy on temporal holdout (7,372 of 8,261) |
 | **Confusion Matrix** | **TP: 752, FP: 698, TN: 6,620, FN: 191** | Evaluated on 8,261 holdout observations with 2-hour purge gap |
+
+---
+
+## Model Comparison & Feature Ablation
+
+To address mentor review feedback (*"Make a comparison so that it will be easy for me"*), ShinerAI provides a consolidated benchmark table evaluating all 11 model configurations and 2 baselines on the chronological temporal holdout ($N = 8,261$, 11.42% positive prevalence):
+
+### Consolidated Model Comparison Table
+
+| Model | Feature Configuration | PR-AUC | ROC-AUC | F1 | Recall | Precision | Specificity | Accuracy |
+|---|---|---|---|---|---|---|---|---|
+| **Majority Baseline** | None (Class Distribution Only) | **0.1142** | 0.5000 | 0.0000 | 0.0000 | 0.0000 | 1.0000 | 0.8858 |
+| **Current-DO Baseline** | Current DO Only (Static Threshold $\le 4.2$ mg/L) | **0.6149** | 0.9024 | 0.4516 | 0.8961 | 0.3019 | 0.7330 | 0.7516 |
+| **Logistic Regression** | Config A — Current DO + Time (5 Predictors) | **0.6019** | 0.8994 | 0.4274 | 0.9003 | 0.2802 | 0.7020 | 0.7246 |
+| **Logistic Regression** | Config B — Current + DO/pH/Temp History (29 Predictors) | **0.6763** | 0.9078 | 0.4295 | 0.8993 | 0.2821 | 0.7051 | 0.7273 |
+| **Logistic Regression** | Config C — Current + Recent DO History (11 Predictors) | **0.6550** | 0.9093 | 0.4549 | 0.8940 | 0.3051 | 0.7376 | 0.7555 |
+| **Random Forest** | Config A — Current DO + Time (5 Predictors) | **0.7107** | 0.9116 | 0.6174 | 0.7709 | 0.5149 | 0.9064 | 0.8909 |
+| **Random Forest** | Config B — Current + DO/pH/Temp History (29 Predictors) | **0.7420** | 0.9169 | 0.6233 | 0.7614 | 0.5276 | 0.9121 | 0.8949 |
+| **Random Forest** | Config C — Current + Recent DO History (11 Predictors) | **0.7471** | 0.9144 | 0.6602 | 0.7561 | 0.5859 | 0.9311 | 0.9111 |
+| **XGBoost** | Config A — Current DO + Time (5 Predictors) | **0.7317** | 0.9150 | 0.5817 | 0.8102 | 0.4537 | 0.8743 | 0.8670 |
+| **XGBoost** | Config B — Current + DO/pH/Temp History (29 Predictors) | **0.7353** | 0.9171 | 0.5922 | 0.7932 | 0.4725 | 0.8859 | 0.8753 |
+| **XGBoost (Champion)** | **Config C — Current + Recent DO History (11 Predictors)** | **0.7574** | **0.9162** | **0.6285** | **0.7975** | **0.5186** | **0.9046** | **0.8924** |
+
+> *Authoritative source artifact:* [`results/reports/MODEL_COMPARISON.csv`](results/reports/MODEL_COMPARISON.csv) | [`results/reports/MODEL_COMPARISON.md`](results/reports/MODEL_COMPARISON.md)
+
+![Model Comparison PR-AUC](results/figures/model_comparison_prauc.png)
+
+### Feature Ablation: Does Recent DO History Add Predictive Value?
+
+To isolate the predictive contribution of temporal context versus static telemetry, we evaluate three sensor configurations:
+- **Config A (5 features):** Current values (`current_do`, `current_ph`, `current_temperature`, `hour_of_day`, `minute_of_day`).
+- **Config B (29 features):** Current values + 8 lags each of DO, pH, and Temperature ($t-15\text{m}$ to $t-120\text{m}$) + diurnal time.
+- **Config C (11 features):** Current values + 8 lags of DO only ($t-15\text{m}$ to $t-120\text{m}$) + diurnal time.
+
+| Model Architecture | Config A PR-AUC | Config B PR-AUC | Config C PR-AUC | Config B - Config A | Config C - Config A Lift | Config C - Config B |
+|---|---|---|---|---|---|---|
+| **Logistic Regression** | 0.6019 | 0.6763 | 0.6550 | +0.0744 | **+0.0531** | -0.0213 |
+| **Random Forest** | 0.7107 | 0.7420 | 0.7471 | +0.0313 | **+0.0364** | +0.0051 |
+| **XGBoost** | 0.7317 | 0.7353 | 0.7574 | +0.0036 | **+0.0257** | +0.0221 |
+
+**Key Ablation Insights:**
+1. **Recent DO History Adds Defensible Predictive Lift:** For every model family, adding 2 hours of DO history yields substantial PR-AUC improvements over current-only features alone (+0.0531 for LR, +0.0364 for RF, +0.0257 for XGBoost).
+2. **Model-Specific Sensor Trade-offs:** Config C does *not* strictly dominate Config B across all models. For linear Logistic Regression, auxiliary water quality sensors (pH, temperature) provide additional linear separability (+0.0744 vs +0.0531). For non-linear tree ensembles (RF and XGBoost), isolating historical DO avoids feature dilution and tree split fragmentation, achieving the highest overall PR-AUC (0.7471 and 0.7574).
+3. **No Explicit Derivative Engineered:** All temporal inputs are discrete 15-minute sensor observations; no mathematical derivative or explicit velocity feature was computed.
+
+> *Artifacts:* [`results/reports/FEATURE_ABLATION_COMPARISON.csv`](results/reports/FEATURE_ABLATION_COMPARISON.csv) | [`results/reports/FEATURE_ABLATION_COMPARISON.md`](results/reports/FEATURE_ABLATION_COMPARISON.md)
+
+---
+
+## Independent External Validation (Oman Nile Tilapia Dataset)
+
+To directly answer mentor feedback (*"Make a Independent external validation for this work pa"*), the frozen production model (`models/xgboost_config_c.joblib`) was evaluated on an independent external aquaculture dataset published in 2026:
+
+- **Dataset:** *Dissolved Oxygen Forecasting Dataset for Nile Tilapia Aquaculture in Oman*
+- **Authors:** Ahmed M. Al-Khaldi, Ramadoss Dhandapani, Mohammed A. Al-Badri
+- **Citation:** *Sensors* 2026, 26(13), 4242; DOI: [10.3390/s26134242](https://doi.org/10.3390/s26134242) (CC BY 4.0)
+- **Repository:** [https://github.com/AhmedTheNetCoder/DO-Forecasting-Tilapia-Dataset](https://github.com/AhmedTheNetCoder/DO-Forecasting-Tilapia-Dataset)
+
+### Strict Scientific Safeguards (Zero Retraining / Zero Adaptation):
+1. **Model Strictly Frozen:** The model artifact `models/xgboost_config_c.joblib` was loaded directly. **Zero retraining, zero fitting, and zero fine-tuning** were performed.
+2. **Fixed Decision Threshold:** The classification threshold was locked at $\tau = 0.50$ (zero threshold search on external data).
+3. **Leakage-Free 15-Minute Resampling:** Raw ~7-second IoT readings were resampled into non-overlapping 15-minute right-closed windows $(T-15\text{m}, T]$.
+4. **Identical Task:** Given current $\text{DO} \ge 3.0\text{ mg/L}$ and 2 hours of DO history, forecast whether DO will fall below $3.0\text{ mg/L}$ within the subsequent 2 hours.
+
+### Internal vs. External Validation Benchmark Comparison
+
+| Metric / Dimension | Internal FWI Temporal Holdout | External Oman Tilapia Validation |
+|---|---|---|
+| **Target Organism** | Golden Shiner (*Notemigonus crysoleucas*) | Nile Tilapia (*Oreochromis niloticus*) |
+| **Geographic Region** | Lonoke County, Arkansas, USA (Humid Subtropical) | North Al Sharqiyah, Oman (Arid Desert) |
+| **Facility Context** | Commercial production earthen ponds (17 ponds) | Controlled 180L recirculating tank with live tilapia |
+| **Sensor Platform** | Continuous optical/photometer multiparameter sonde | Low-cost Gravity analog DO probe + ESP32 IoT |
+| **Raw Sampling Rate** | 15-minute nominal intervals | ~5–7 second high-frequency readings |
+| **Eligible Test Samples ($N$)** | **8,261** 15-minute intervals | **742** 15-minute intervals (8.74 continuous days) |
+| **Positive Events (AT_RISK)** | **943** events (11.42% prevalence) | **0** events (0.00% prevalence; well-aerated tank) |
+| **Negative Samples (SAFE)** | 7,318 samples | 742 samples |
+| **Decision Threshold ($\tau$)** | 0.50 (frozen) | 0.50 (frozen, zero adaptation) |
+| **True Negatives (TN)** | 6,620 | **742** |
+| **False Positives (FP)** | 698 | **0** |
+| **True Positives (TP)** | 752 | **0** |
+| **False Negatives (FN)** | 191 | **0** |
+| **Specificity (TNR)** | **0.9046 (90.46%)** | **1.0000 (100.0%)** |
+| **Accuracy** | **0.8924 (89.24%)** | **1.0000 (100.0%)** |
+| **Precision (PPV)** | 0.5186 (51.86%) | 0.0000 (0 TP / 0 predicted risk) |
+| **Recall (Sensitivity)** | **0.7975 (79.75%)** | *Undefined* (0 positive ground-truth events) |
+| **F1 Score** | 0.6285 | *Undefined* (no positive ground-truth events) |
+| **PR-AUC (Primary)** | **0.7574** | *Undefined* (single-class ground truth) |
+| **ROC-AUC** | **0.9162** | *Undefined* (single-class ground truth) |
+
+> *Source artifact:* [`results/external_validation/INTERNAL_VS_EXTERNAL_COMPARISON.csv`](results/external_validation/INTERNAL_VS_EXTERNAL_COMPARISON.csv)
+
+### Key Validation Findings & Honest Disclosure:
+1. **Zero False Alarm Rate on Clean Telemetry (100.0% Specificity):** The frozen model achieved **100.0% Specificity** across all 742 clean evaluation intervals ($\text{TN} = 742, \text{FP} = 0$), generating zero false alarms during continuous live monitoring.
+2. **Conservative Risk Calibration:** The mean predicted risk probability was **8.93%** (median 7.11%, max 44.06%), safely below the 50% action threshold.
+3. **Absence of External Low-DO Ground Truth:** Because the Oman experimental tank maintained active mechanical aeration, DO remained between **6.08 and 12.25 mg/L** (mean 7.78 mg/L). Not a single true hypoxic event ($< 3.0\text{ mg/L}$) occurred in the ground truth.
+4. **Transparent Incomplete Metric Disclosure:** Because the external positive class is completely absent, metrics requiring positive instances (Recall, F1, PR-AUC, ROC-AUC) are mathematically undefined. In accordance with strict scientific integrity standards, ShinerAI **reports these metrics as undefined** rather than fabricating synthetic scores.
+
+### The 10 Documented Scientific Limitations:
+1. **Zero External Positive Events:** Continuous mechanical aeration prevented any dissolved oxygen crash ($< 3.0\text{ mg/L}$), precluding empirical evaluation of external Recall/Sensitivity.
+2. **Geographic & Climate Shift:** Arid desert environment in Oman with extreme diurnal ambient swings vs. humid subtropical Arkansas.
+3. **Species Biology Shift:** Nile tilapia (*O. niloticus*, higher hypoxia tolerance) vs. golden shiner (*N. crysoleucas*).
+4. **Scale & Facility Divergence:** 180-liter closed indoor/covered tank vs. multi-acre open commercial earthen ponds with massive thermal inertia and sediment oxygen demand.
+5. **Sensor Hardware Divergence:** Low-cost analog galvanic probe + ESP32 vs. commercial optical multi-parameter sonde.
+6. **Short Monitoring Horizon:** 8.74 continuous days in Oman vs. 63 days of seasonal monitoring across 17 Arkansas ponds.
+7. **Continuous Aeration Regime:** Masks natural nocturnal respiration drops driven by phytoplankton blooms.
+8. **Analog Sensor Dropouts:** Hardware disconnects producing instantaneous 0.0 mg/L readings required explicit quality filters to prevent spurious feature shifts.
+9. **Unused Co-variates:** External telemetry recorded temperature and pH, but Config C intentionally omits them for sensor parsimony.
+10. **Unproven External Sensitivity Generalization:** Model specificity is empirically verified, but out-of-distribution sensitivity during real oxygen crashes remains to be validated when external hypoxic telemetry becomes publicly available.
+
+> *Full Reports:* [`results/external_validation/EXTERNAL_VALIDATION_REPORT.md`](results/external_validation/EXTERNAL_VALIDATION_REPORT.md) | [`results/external_validation/EXTERNAL_DATASET_AUDIT.md`](results/external_validation/EXTERNAL_DATASET_AUDIT.md) | [`results/external_validation/EXTERNAL_VALIDATION_PROTOCOL.md`](results/external_validation/EXTERNAL_VALIDATION_PROTOCOL.md)
+
 
 ---
 
@@ -105,44 +217,44 @@ To inspect, run, or reproduce the complete end-to-end machine learning research 
 ```bash
 jupyter notebook notebooks/ShinerAI_Complete_ML_Pipeline.ipynb
 ```
-*(or open [`notebooks/ShinerAI_Complete_ML_Pipeline.ipynb`](file:///d:/FISH/notebooks/ShinerAI_Complete_ML_Pipeline.ipynb) directly in VS Code / Jupyter Lab)*
+*(or open [`notebooks/ShinerAI_Complete_ML_Pipeline.ipynb`](notebooks/ShinerAI_Complete_ML_Pipeline.ipynb) directly in VS Code / Jupyter Lab)*
 
 ---
 
 ## Project Status
 
 - **Research Scientific Audit & Evidence Verification** — **COMPLETED**
-  - **Comprehensive Scientific Audit Report:** [`results/audit/SCIENTIFIC_AUDIT_REPORT.md`](file:///d:/FISH/results/audit/SCIENTIFIC_AUDIT_REPORT.md) synthesizing 16 formal audit deliverables certifying zero target leakage, 100% active model reproduction, exact data cleaning accounting, label logic integrity, and defensible research conclusions.
-  - **Mentor Evidence Briefing:** [`results/audit/MENTOR_EVIDENCE_SUMMARY.md`](file:///d:/FISH/results/audit/MENTOR_EVIDENCE_SUMMARY.md) providing direct, tabulated answers to mentor review questions.
-  - **Metric Reconciliation:** [`results/audit/METRIC_RECONCILIATION.csv`](file:///d:/FISH/results/audit/METRIC_RECONCILIATION.csv) reconciling historical draft variations with the authoritative master table.
-  - **Audit Suite Inventory:** Complete suite of 16 markdown audits and reconciliation tables located in [`results/audit/`](file:///d:/FISH/results/audit/).
+  - **Comprehensive Scientific Audit Report:** [`results/audit/SCIENTIFIC_AUDIT_REPORT.md`](results/audit/SCIENTIFIC_AUDIT_REPORT.md) synthesizing 16 formal audit deliverables certifying zero target leakage, 100% active model reproduction, exact data cleaning accounting, label logic integrity, and defensible research conclusions.
+  - **Mentor Evidence Briefing:** [`results/audit/MENTOR_EVIDENCE_SUMMARY.md`](results/audit/MENTOR_EVIDENCE_SUMMARY.md) providing direct, tabulated answers to mentor review questions.
+  - **Metric Reconciliation:** [`results/audit/METRIC_RECONCILIATION.csv`](results/audit/METRIC_RECONCILIATION.csv) reconciling historical draft variations with the authoritative master table.
+  - **Audit Suite Inventory:** Complete suite of 16 markdown audits and reconciliation tables located in [`results/audit/`](results/audit/).
 
 - **Research Reproducibility & Master Pipeline Notebook** — **COMPLETED**
-  - **Single Source of Truth Notebook:** [`notebooks/ShinerAI_Complete_ML_Pipeline.ipynb`](file:///d:/FISH/notebooks/ShinerAI_Complete_ML_Pipeline.ipynb) covers sequentially structured sections unifying data loading, audit, cleaning, label logic verification, leak-free temporal splitting with 2-hour purge gap, baseline modeling, candidate training (Logistic Regression, Random Forest, XGBoost across Configs A, B, C), 5-fold GroupKFold unseen-pond generalization, temporal holdout evaluation, forensic error analysis, high-precision wall-time profiling, global/local SHAP explainability, and domain-specific contribution experiments.
-  - **Master Model Evaluation Table:** [`results/reports/MASTER_MODEL_EVALUATION.csv`](file:///d:/FISH/results/reports/MASTER_MODEL_EVALUATION.csv) comparing all 11 model configurations and 2 baselines across 12 standardized classification metrics (PR-AUC, ROC-AUC, F1, Recall, Precision, Specificity, Accuracy, TP, FP, TN, FN).
-  - **Pipeline Wall-Time Benchmark:** [`results/timing/pipeline_wall_time.csv`](file:///d:/FISH/results/timing/pipeline_wall_time.csv) profiling total end-to-end execution (~20.5 seconds) and confirming sub-millisecond inference latency (< 0.05 ms per sample).
-  - **Publication Figures:** 8 publication-grade research figures saved in [`results/figures/`](file:///d:/FISH/results/figures/).
+  - **Single Source of Truth Notebook:** [`notebooks/ShinerAI_Complete_ML_Pipeline.ipynb`](notebooks/ShinerAI_Complete_ML_Pipeline.ipynb) covers sequentially structured sections unifying data loading, audit, cleaning, label logic verification, leak-free temporal splitting with 2-hour purge gap, baseline modeling, candidate training (Logistic Regression, Random Forest, XGBoost across Configs A, B, C), 5-fold GroupKFold unseen-pond generalization, temporal holdout evaluation, forensic error analysis, high-precision wall-time profiling, global/local SHAP explainability, and domain-specific contribution experiments.
+  - **Master Model Evaluation Table:** [`results/reports/MASTER_MODEL_EVALUATION.csv`](results/reports/MASTER_MODEL_EVALUATION.csv) comparing all 11 model configurations and 2 baselines across 12 standardized classification metrics (PR-AUC, ROC-AUC, F1, Recall, Precision, Specificity, Accuracy, TP, FP, TN, FN).
+  - **Pipeline Wall-Time Benchmark:** [`results/timing/pipeline_wall_time.csv`](results/timing/pipeline_wall_time.csv) profiling total end-to-end execution (~20.5 seconds) and confirming sub-millisecond inference latency (< 0.05 ms per sample).
+  - **Publication Figures:** 8 publication-grade research figures saved in [`results/figures/`](results/figures/).
 
 - **Phase 1: Environment Setup & Dataset Audit** — **COMPLETED**
   - Audited 17 pond continuous time-series CSV files (72,750 continuous 15-minute readings).
   - Confirmed 15-minute nominal sampling cadence (97.37% adherence) and identified multi-day operational gaps.
   - Cataloged equipment artifact zeros and QC flags.
   - Proved empirical feasibility: 15,451 low-DO readings occur across all 17 ponds (21.24% of raw dataset).
-  - Detailed report: [`DATASET_AUDIT.md`](file:///d:/FISH/DATASET_AUDIT.md).
+  - Detailed report: [`DATASET_AUDIT.md`](DATASET_AUDIT.md).
 
 - **Phase 2: Data Cleaning, Label Generation & Final Reconciliation** — **COMPLETED**
-  - Established formal QC cleaning policy ([`QC_CLEANING_POLICY.md`](file:///d:/FISH/QC_CLEANING_POLICY.md)).
+  - Established formal QC cleaning policy ([`QC_CLEANING_POLICY.md`](QC_CLEANING_POLICY.md)).
   - Cleaned and segmented time series, isolating equipment artifacts and conflicting duplicate records.
-  - Constructed leak-free supervised learning dataset ([`data/processed/ml_ready_dataset.csv`](file:///d:/FISH/data/processed/ml_ready_dataset.csv)) with 41,277 examples across 37 columns.
-  - Completed strict numerical reconciliation: accounted for all 72,750 raw rows with exactly zero unexplained rows ([`results/reports/phase2_row_accounting.csv`](file:///d:/FISH/results/reports/phase2_row_accounting.csv)).
+  - Constructed leak-free supervised learning dataset ([`data/processed/ml_ready_dataset.csv`](data/processed/ml_ready_dataset.csv)) with 41,277 examples across 37 columns.
+  - Completed strict numerical reconciliation: accounted for all 72,750 raw rows with exactly zero unexplained rows ([`results/reports/phase2_row_accounting.csv`](results/reports/phase2_row_accounting.csv)).
   - Resolved duplicate discrepancy: 258 excess rows via `keep='first'` vs. 512 total colliding records via `keep=False`.
   - Reconciled class distribution: 36,101 SAFE (87.46%), 5,176 AT_RISK (12.54%), 6.97 : 1 ratio ("moderately imbalanced class distribution").
   - Enforced zero data leakage: 24 past historical features ($t-120\text{m} \dots t$) and quarantined future 2-hour target ($t+15\text{m} \dots t+120\text{m}$).
   - All 24 automated unit and data leakage tests passing.
-  - Detailed report: [`PHASE_2_REPORT.md`](file:///d:/FISH/PHASE_2_REPORT.md).
+  - Detailed report: [`PHASE_2_REPORT.md`](PHASE_2_REPORT.md).
 
 - **Formal Project Documentation** — **COMPLETED**
-  - Comprehensive 40-section technical specification: [`PROJECT_DOCUMENTATION.md`](file:///d:/FISH/PROJECT_DOCUMENTATION.md).
+  - Comprehensive 40-section technical specification: [`PROJECT_DOCUMENTATION.md`](PROJECT_DOCUMENTATION.md).
 
 - **Phase 3: Machine Learning Training & Evaluation** — **COMPLETED**
   - Evaluated baselines (Majority PR-AUC: 0.1142; Current-DO Boolean Threshold F1: 0.6257; Current-DO Ranking PR-AUC: 0.6149).
@@ -151,8 +263,8 @@ jupyter notebook notebooks/ShinerAI_Complete_ML_Pipeline.ipynb
   - Evaluated 5-fold GroupKFold unseen-pond generalization across all 17 ponds.
   - Evaluated operational trade-offs: XGBoost Config C achieved highest PR-AUC (0.7574); Random Forest Config C achieved highest F1 (0.6602) and specificity (93.11%), producing fewer false alarms (504 FPs) at default threshold; Logistic Regression Config B provided highest recall (89.93%).
   - Serialized model artifacts under `models/` with metadata specification.
-  - Detailed report: [`PHASE_3_REPORT.md`](file:///d:/FISH/PHASE_3_REPORT.md).
-  - Beginner guide: [`PHASE_3_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_3_BEGINNER_GUIDE.md).
+  - Detailed report: [`PHASE_3_REPORT.md`](PHASE_3_REPORT.md).
+  - Beginner guide: [`PHASE_3_BEGINNER_GUIDE.md`](PHASE_3_BEGINNER_GUIDE.md).
 
 - **Phase 4: Model Explainability & Flask Backend REST API** — **COMPLETED**
   - Implemented SHAP TreeExplainer pipeline (`src/explainability_pipeline.py`) computing global feature importance (1,000 test observations) and local waterfall/bar explanations for representative SAFE and AT_RISK cases.
@@ -160,9 +272,9 @@ jupyter notebook notebooks/ShinerAI_Complete_ML_Pipeline.ipynb
   - Transparent artifact provenance: Config C model artifacts were reproduced using the frozen Phase 3 training procedure solely to create dedicated explainability/API artifacts; no model architecture, dataset, split, feature set, or training procedure was changed.
   - Built production Flask REST API (`backend/`) with strict input validation, boundary condition enforcement ($\text{DO} \ge 3.0\text{ mg/L}$), canonical public input naming (`do_t_minus_15` to `do_t_minus_120`), and four endpoints (`/health`, `/model-info`, `/predict`, `/explain`).
   - Supported configurable model artifact loading (`MODEL_ARTIFACT_PATH`) between XGBoost Config C (highest PR-AUC among tested models: 0.7574, highest recall among Config C tree models: 79.75%) and Random Forest Config C (highest Specificity: 93.11%, producing 194 fewer false positives than XGBoost Config C at the default threshold; this could reduce unnecessary interventions in a deployment where alerts trigger aeration).
-  - Detailed report: [`PHASE_4_REPORT.md`](file:///d:/FISH/PHASE_4_REPORT.md).
-  - Beginner guide: [`PHASE_4_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_4_BEGINNER_GUIDE.md).
-  - REST API specification: [`docs/API.md`](file:///d:/FISH/docs/API.md).
+  - Detailed report: [`PHASE_4_REPORT.md`](PHASE_4_REPORT.md).
+  - Beginner guide: [`PHASE_4_BEGINNER_GUIDE.md`](PHASE_4_BEGINNER_GUIDE.md).
+  - REST API specification: [`docs/API.md`](docs/API.md).
 
 - **Phase 5: Interactive Dashboard & UI + End-to-End Integration** — **COMPLETED**
   - Developed a lightweight, accessible, and responsive web dashboard in `frontend/` using pure semantic HTML5, vanilla CSS3, and native JavaScript (ES6+).
@@ -171,9 +283,9 @@ jupyter notebook notebooks/ShinerAI_Complete_ML_Pipeline.ipynb
   - Implemented dynamic 2-hour DO trajectory visualization in pure SVG with a prominent $3.0\text{ mg/L}$ provisional hypoxia threshold reference line.
   - Built-in demonstration scenarios (SAFE Case Study — Rising DO During Daytime vs. AT_RISK Case Study — Declining DO During Nighttime) loaded directly from the evaluated temporal holdout set.
   - Interactive prediction (`POST /predict`) and local SHAP explainability (`POST /explain`) with direction indicators (`↑ Toward AT_RISK`, `↓ Toward SAFE`).
-  - Automated test suite expanded to 78 tests with 100% pass rate.
-  - Detailed report: [`PHASE_5_REPORT.md`](file:///d:/FISH/PHASE_5_REPORT.md).
-  - Beginner guide: [`PHASE_5_BEGINNER_GUIDE.md`](file:///d:/FISH/PHASE_5_BEGINNER_GUIDE.md).
+  - Automated test suite expanded to 97 tests with 100% pass rate.
+  - Detailed report: [`PHASE_5_REPORT.md`](PHASE_5_REPORT.md).
+  - Beginner guide: [`PHASE_5_BEGINNER_GUIDE.md`](PHASE_5_BEGINNER_GUIDE.md).
 
 ## Dataset Health & Reconciliation Summary
 
@@ -255,7 +367,7 @@ Label: AT_RISK (1)                    Did sensor monitor full 2h?
          Phase 3 Baseline Modeling (Pending Approval)
 ```
 
-> **Detailed Architecture Diagram:** Saved at [`results/figures/data_flow_diagram.png`](file:///d:/FISH/results/figures/data_flow_diagram.png).
+> **Detailed Architecture Diagram:** Saved at [`results/figures/data_flow_diagram.png`](results/figures/data_flow_diagram.png).
 
 ---
 
@@ -420,7 +532,7 @@ python src/explainability_pipeline.py
 *Access the interactive dashboard in your browser at `http://127.0.0.1:5000/` or `http://127.0.0.1:5000/dashboard`.*  
 *(By default runs on `http://127.0.0.1:5000` serving `models/xgboost_config_c.joblib`)*
 
-### 7. Run the Full Automated Test Suite (85 Tests)
+### 7. Run the Full Automated Test Suite (97 Tests)
 ```bash
 pytest -v
 # Or explicitly with the active virtual environment:

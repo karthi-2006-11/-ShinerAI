@@ -1,0 +1,19 @@
+Metric,Internal FWI Test Set,External Oman Validation
+Evaluation Domain,"Golden Shiner Ponds, Arkansas, USA","Nile Tilapia Tank, North Al Sharqiyah, Oman"
+Aquaculture Context,Commercial production earth ponds (17 ponds),Controlled 180L validation tank with live tilapia
+Sensor Platform,Continuous optical & photometer multi-parameter sonde,Low-cost Gravity analog DO sensor + ESP32 IoT
+Test Sample Count,"8,261 observations (15-min intervals)",742 observations (15-min intervals)
+Positive Events (AT_RISK),943 events (11.42% prevalence),0 events (0.00% prevalence; well-aerated tank)
+Negative Samples (SAFE),"7,318 samples",742 samples
+Decision Threshold,0.50 (frozen),"0.50 (frozen, no adaptation)"
+True Negatives (TN),"6,620",742
+False Positives (FP),698,0
+True Positives (TP),752,0
+False Negatives (FN),191,0
+Specificity (TNR),0.9046 (90.46%),1.0000 (100.00%)
+Accuracy,0.8924 (89.24%),1.0000 (100.00%)
+Precision (PPV),0.5186 (51.86%),0.0000 (0 TP / 0 predicted risk)
+Recall (Sensitivity),0.7975 (79.75%),Undefined (0 positive ground-truth events)
+F1 Score,0.6285,Undefined (no positive ground-truth events)
+PR-AUC (Average Precision),0.7574,Undefined (single-class target distribution)
+ROC-AUC,0.9162,Undefined (single-class target distribution)

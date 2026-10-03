@@ -14,7 +14,10 @@ __pycache__/
 
 # Raw aquaculture telemetry dataset (DO NOT COMMIT)
 data/raw/csv/
+data/external/oman_tilapia/data/raw/
+data/external/oman_tilapia/data/validation/
 
 # Scratch & temporary logs
 scratch/
 *.log
+

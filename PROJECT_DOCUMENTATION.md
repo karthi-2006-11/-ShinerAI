@@ -231,7 +231,7 @@ The original dataset author annotations (`QC_Flag_DateTime`, `QC_Flag_DO`, `QC_F
 ---
 
 ## 23. Cleaning Methodology
-The data cleaning pipeline ([`src/cleaning.py`](file:///d:/FISH/src/cleaning.py)) operates strictly as a deterministic multi-stage filter:
+The data cleaning pipeline ([`src/cleaning.py`](src/cleaning.py)) operates strictly as a deterministic multi-stage filter:
 1. **Raw Verification:** Confirm read-only raw files, verify schema integrity, parse datetime strings to `pd.Timestamp`.
 2. **Quarantine Filtering:** Flag exact zeros and conflicting duplicates, assigning explicit status strings in `cleaned_pond_data.csv`.
 3. **Chronological Sorting:** Enforce strict time ordering within each pond.
@@ -303,7 +303,7 @@ flowchart TD
     style ExFut fill:#fffde7,stroke:#f57f17
 ```
 
-> **Architecture Diagram Image:** A high-resolution export of the pipeline architecture is saved at [`results/figures/data_flow_diagram.png`](file:///d:/FISH/results/figures/data_flow_diagram.png).
+> **Architecture Diagram Image:** A high-resolution export of the pipeline architecture is saved at [`results/figures/data_flow_diagram.png`](results/figures/data_flow_diagram.png).
 
 ---
 
@@ -380,18 +380,18 @@ An example is certified as **AT_RISK (`target = 1`)** if and only if:
 Data leakage occurs when information from the future is inadvertently introduced into feature inputs, leading to unrealistically optimistic validation metrics that collapse in production. ShinerAI implements strict structural defenses:
 1. **Strict Temporal Partitioning:** All 34 input/metadata columns are constructed exclusively from timestamps $t \le T$. The actual model predictors will be selected during Phase 3.
 2. **Quarantined Target Columns:** Only two target columns exist in the ML dataset (`target` and `target_name`), derived from future readings $t > T$.
-3. **Automated Leakage Audit:** An automated scanner ([`tests/test_no_data_leakage.py`](file:///d:/FISH/tests/test_no_data_leakage.py) and [`results/reports/leakage_audit_report.json`](file:///d:/FISH/results/reports/leakage_audit_report.json)) verifies zero forward tokens (e.g., `lead`, `next`, `future`), confirming that future values never enter the feature matrix.
+3. **Automated Leakage Audit:** An automated scanner ([`tests/test_no_data_leakage.py`](tests/test_no_data_leakage.py) and [`results/reports/leakage_audit_report.json`](results/reports/leakage_audit_report.json)) verifies zero forward tokens (e.g., `lead`, `next`, `future`), confirming that future values never enter the feature matrix.
 
 ---
 
 ## 33. Final ML Dataset
-The final supervised learning dataset is stored at [`data/processed/ml_ready_dataset.csv`](file:///d:/FISH/data/processed/ml_ready_dataset.csv).
+The final supervised learning dataset is stored at [`data/processed/ml_ready_dataset.csv`](data/processed/ml_ready_dataset.csv).
 - **Total Observations:** **41,277 rows**
 - **Total Columns:** **37 columns**
 - **Column Specification & Breakdown:**
   The dataset contains **34 input/metadata columns. The actual model predictors will be selected during Phase 3.** (Note: `pond_id` and `prediction_timestamp` serve as metadata tracking and grouping keys, not numerical ML predictors).
 
-  The 37 columns in [`data/processed/ml_ready_dataset.csv`](file:///d:/FISH/data/processed/ml_ready_dataset.csv) match this header order:
+  The 37 columns in [`data/processed/ml_ready_dataset.csv`](data/processed/ml_ready_dataset.csv) match this header order:
   - **Metadata Identifiers (2 columns):**
     1. `pond_id` (string): Anonymized pond identifier (used for cross-pond grouping/splitting)
     2. `prediction_timestamp` (string/datetime): Timestamp $T$ at which predictions are evaluated
@@ -412,7 +412,7 @@ The final supervised learning dataset is stored at [`data/processed/ml_ready_dat
     36. `target_name` (string): Human-readable label ('SAFE' or 'AT_RISK')
     37. `data_quality_status` (string): Processing quality marker ('ml_ready')
 
-This 37-column specification exactly reflects the physical schema and header of [`data/processed/ml_ready_dataset.csv`](file:///d:/FISH/data/processed/ml_ready_dataset.csv).
+This 37-column specification exactly reflects the physical schema and header of [`data/processed/ml_ready_dataset.csv`](data/processed/ml_ready_dataset.csv).
 
 ---
 
@@ -455,7 +455,7 @@ Every monitored pond contributes valid training examples across both classes, en
 
 ## 36. Label Validation
 To verify ground-truth labeling fidelity, 40 random examples (20 certified SAFE and 20 certified AT_RISK) were audited against raw future readings:
-- **Audit File:** [`results/reports/label_logic_validation.csv`](file:///d:/FISH/results/reports/label_logic_validation.csv)
+- **Audit File:** [`results/reports/label_logic_validation.csv`](results/reports/label_logic_validation.csv)
 - **Validation Accuracy:** **40 / 40 (100.0%)**
 - **Lead Time Insights:** Among audited AT_RISK events, the time required for DO to breach 3.0 mg/L averaged 45 to 75 minutes after time $T$, confirming that the 2-hour horizon captures actionable pre-crisis windows.
 
@@ -479,20 +479,20 @@ In keeping with rigorous scientific integrity, several real-world dataset limita
 - Audited all 17 pond time-series CSV files (72,750 raw readings) and 5 metadata files.
 - Confirmed ~15-minute sampling cadence adherence (97.37%) and documented multi-day operational gaps.
 - Identified 15,451 raw low-DO observations across all 17 ponds, confirming empirical feasibility.
-- Documented findings in [`DATASET_AUDIT.md`](file:///d:/FISH/DATASET_AUDIT.md) with 23 generated publication figures.
+- Documented findings in [`DATASET_AUDIT.md`](DATASET_AUDIT.md) with 23 generated publication figures.
 
 ---
 
 ## 39. Phase 2 Summary
 **Objective:** Quality-controlled data cleaning, temporal segmentation, leak-free supervised label construction, and strict numerical reconciliation.
-- Established explicit data cleaning rules in [`QC_CLEANING_POLICY.md`](file:///d:/FISH/QC_CLEANING_POLICY.md).
+- Established explicit data cleaning rules in [`QC_CLEANING_POLICY.md`](QC_CLEANING_POLICY.md).
 - Isolated 629 sensor artifact zeros and 512 conflicting duplicate collision rows.
 - Partitioned continuous streams at $\Delta t > 20\text{ min}$ into contiguous segments.
 - Formulated the early-warning prediction task from healthy states ($\text{DO}_T \ge 3.0\text{ mg/L}$) over a 2-hour horizon.
 - Upgraded the SAFE certification rule to mandate complete future coverage through $T + 120\text{ min}$ ($\ge 119\text{ min}$, $\ge 8$ future readings).
 - Resolved duplicate count definitions (258 excess rows dropped via `keep='first'` vs. 512 total colliding rows via `keep=False`).
-- Formed the supervised learning dataset [`data/processed/ml_ready_dataset.csv`](file:///d:/FISH/data/processed/ml_ready_dataset.csv) (41,277 rows, 37 columns).
-- Achieved strict numerical reconciliation across all 72,750 raw rows with **0 unexplained rows** ([`results/reports/phase2_row_accounting.csv`](file:///d:/FISH/results/reports/phase2_row_accounting.csv)).
+- Formed the supervised learning dataset [`data/processed/ml_ready_dataset.csv`](data/processed/ml_ready_dataset.csv) (41,277 rows, 37 columns).
+- Achieved strict numerical reconciliation across all 72,750 raw rows with **0 unexplained rows** ([`results/reports/phase2_row_accounting.csv`](results/reports/phase2_row_accounting.csv)).
 - Passed 24/24 automated unit and data leakage tests.
 
 ---
@@ -546,7 +546,7 @@ The model predicts **impending low-dissolved-oxygen events** ($\text{DO} < 3.0\t
    - **XGBoost Config C:** Achieves highest overall PR-AUC (**0.7574**), catching 79.8% of low-DO events with 698 false alarms.
    - **Random Forest Config C:** Achieves highest F1 (**0.6602**), highest precision (**58.59%**), and highest specificity (**93.11%**) at default threshold ($p=0.50$), producing fewer false alarms (504 FPs) which could reduce unnecessary interventions in a deployment where alerts trigger aeration.
    - **Logistic Regression Config B:** Provides a high-recall linear alternative (**89.93% recall**, catching 848 events), but at the cost of 2,158 false alarms.
-   - See formal trade-off matrix in [`results/reports/final_model_selection.csv`](file:///d:/FISH/results/reports/final_model_selection.csv).
+   - See formal trade-off matrix in [`results/reports/final_model_selection.csv`](results/reports/final_model_selection.csv).
 
 ---
 
@@ -595,10 +595,10 @@ Phase 5 delivered a production-grade, accessible, and scientifically grounded us
 - **Zero Heavy Frameworks:** Pure semantic HTML5, modern vanilla CSS3, and native JavaScript (ES6+). Zero external frontend dependencies or heavy JavaScript frameworks (no React, Vue, Angular, Bootstrap, or Tailwind).
 - **Interactive Realistic Aquarium Theme Background & Aquatic Typography:** Programmatic procedural Canvas 2D simulation (`frontend/aquarium.js`) rendering clear blue/teal water, 42 schooling goldfish with multi-joint spine undulation and dynamic group escape physics reacting to cursor approach, swaying aquatic plants, rising aerator bubbles, volumetric sunlight shafts, floating frosted glass navbar with custom vector "ShinerAI" wordmark, and genuine glassmorphic cards (translucent gradient `rgba(255, 255, 255, 0.20)` to `0.12`, `backdrop-filter: blur(22px) saturate(115%)`, subtle readability veil `rgba(235, 248, 255, 0.06)`, and an aquatic pearl-white typography system with tokens `#F4FBFF`, `#FFFFFF`, `#C7DCE8`, `#B7CFDC` and soft aquatic drop-shadow `0 1px 2px rgba(0, 20, 35, 0.40)` paired with light high-contrast input fields) ensuring the aquarium simulation is visible directly through the cards while guaranteeing 100% WCAG AAA text legibility.
 - **Static Serving & Dual-Mode Routing:** The Flask application in `backend/app.py` serves the frontend directly from `frontend/`:
-  - Browser visits to `GET /` (with `Accept: text/html`) receive [`frontend/index.html`](file:///d:/FISH/frontend/index.html).
+  - Browser visits to `GET /` (with `Accept: text/html`) receive [`frontend/index.html`](frontend/index.html).
   - Explicit dashboard access at `GET /dashboard` delivers the dashboard HTML.
   - API and automated test client calls to `GET /` continue to receive standard JSON service discovery metadata, maintaining 100% backward-compatibility.
-  - Static stylesheet ([`frontend/style.css`](file:///d:/FISH/frontend/style.css)), controller ([`frontend/app.js`](file:///d:/FISH/frontend/app.js)), and aquarium engine ([`frontend/aquarium.js`](file:///d:/FISH/frontend/aquarium.js)) are served directly by Flask.
+  - Static stylesheet ([`frontend/style.css`](frontend/style.css)), controller ([`frontend/app.js`](frontend/app.js)), and aquarium engine ([`frontend/aquarium.js`](frontend/aquarium.js)) are served directly by Flask.
 
 ### 2. User Interface Panels & Features:
 - **Floating Frosted Glass Navbar & Dynamic API Health Indicator:** Compact sticky header with a custom vector wordmark featuring pearl-to-sky letterforms, luminous bubble dot over the "i", tech cyan "AI", clean subtitle `FISH-FARM EARLY WARNING`, and queries `GET /health` with visual status pill (`● API Connected` / `● API Offline`) and live retry controls.
@@ -613,7 +613,7 @@ Phase 5 delivered a production-grade, accessible, and scientifically grounded us
 - **Scientific Guardrails & Scope:** Persistent disclosures stating that the system predicts water hypoxia events ($\text{DO} < 3.0\text{ mg/L}$ in 2 hours), does not predict fish disease or mortality, and uses a provisional research threshold.
 
 ### 3. Verification & Automated Test Suite:
-- **78 total automated tests** passing with 100% success rate (59 from Phases 1–4 + 19 dedicated Phase 5 tests in [`tests/test_phase5_frontend.py`](file:///d:/FISH/tests/test_phase5_frontend.py)).
+- **78 total automated tests** passing with 100% success rate (59 from Phases 1–4 + 19 dedicated Phase 5 tests in [`tests/test_phase5_frontend.py`](tests/test_phase5_frontend.py)).
 - **Complete End-to-End Verification (Steps A through M):** Validated page serving, health polling, SAFE prediction, AT_RISK prediction, SHAP explanation rendering, boundary condition rejection (`current_do < 3.0 mg/L` returns HTTP 400 `ALREADY_LOW_DO`), and clean error handling without traceback exposure.
 
 ---
@@ -645,11 +645,11 @@ This research notebook unifies data auditing, cleaning, label logic verification
 
 | Mentor Feedback | Resolution in Master Pipeline Notebook | Verified Artifact / Output |
 |---|---|---|
-| *"Repository doesn't contain model training, testing and validation code?"* | Complete Python training, cross-validation, and testing pipelines are embedded and executed top-to-bottom within the notebook. | [`notebooks/ShinerAI_Complete_ML_Pipeline.ipynb`](file:///d:/FISH/notebooks/ShinerAI_Complete_ML_Pipeline.ipynb) |
+| *"Repository doesn't contain model training, testing and validation code?"* | Complete Python training, cross-validation, and testing pipelines are embedded and executed top-to-bottom within the notebook. | [`notebooks/ShinerAI_Complete_ML_Pipeline.ipynb`](notebooks/ShinerAI_Complete_ML_Pipeline.ipynb) |
 | *"I said to keep notebook for everything but you have kept Python pipeline file."* | Fully documented notebook serves as the dedicated research artifact; production scripts (`src/`, `backend/`) remain intact for operational deployment. | Zero code removed; research workflow unified. |
-| *"Results are all scattered. If you tabulate and show me I can consider your work."* | Created unified Master Model Evaluation Table comparing all 11 model configurations and 2 baselines across all 12 standardized classification metrics. | [`results/reports/MASTER_MODEL_EVALUATION.csv`](file:///d:/FISH/results/reports/MASTER_MODEL_EVALUATION.csv) |
-| *"Main gaps are wall-time, complete verified evaluation, stronger evidence, and clearly demonstrated novel contribution."* | 1) High-precision wall-time measurement with `time.perf_counter()`; 2) 5-fold GroupKFold unseen-pond generalization; 3) Trajectory primacy & sensor ablation experiments. | [`results/timing/pipeline_wall_time.csv`](file:///d:/FISH/results/timing/pipeline_wall_time.csv) |
-| *"Need explainable AI integrated and must tell why the model predicted this or that."* | TreeExplainer global feature importance on 1,000 holdout instances + local instance breakdowns for actual SAFE and AT_RISK cases with actionable farm operational rules. | [`results/figures/shap_global_importance.png`](file:///d:/FISH/results/figures/shap_global_importance.png)<br>[`results/figures/shap_at_risk_example.png`](file:///d:/FISH/results/figures/shap_at_risk_example.png) |
+| *"Results are all scattered. If you tabulate and show me I can consider your work."* | Created unified Master Model Evaluation Table comparing all 11 model configurations and 2 baselines across all 12 standardized classification metrics. | [`results/reports/MASTER_MODEL_EVALUATION.csv`](results/reports/MASTER_MODEL_EVALUATION.csv) |
+| *"Main gaps are wall-time, complete verified evaluation, stronger evidence, and clearly demonstrated novel contribution."* | 1) High-precision wall-time measurement with `time.perf_counter()`; 2) 5-fold GroupKFold unseen-pond generalization; 3) Trajectory primacy & sensor ablation experiments. | [`results/timing/pipeline_wall_time.csv`](results/timing/pipeline_wall_time.csv) |
+| *"Need explainable AI integrated and must tell why the model predicted this or that."* | TreeExplainer global feature importance on 1,000 holdout instances + local instance breakdowns for actual SAFE and AT_RISK cases with actionable farm operational rules. | [`results/figures/shap_global_importance.png`](results/figures/shap_global_importance.png)<br>[`results/figures/shap_at_risk_example.png`](results/figures/shap_at_risk_example.png) |
 
 ---
 
@@ -723,40 +723,114 @@ Detailed investigation of misclassified instances for XGBoost Config C on the 8,
 
 ---
 
+
+---
+
+## 6. Consolidated Model Comparison & Feature Ablation Analysis
+
+### 6.1 Benchmark Comparison across 11 Model Configurations
+To ensure rigorous evaluation and transparent presentation, all baseline heuristics and candidate models were tested on the exact same leak-free chronological holdout ($N = 8,261$, 943 positive events, 2-hour purge gap):
+
+| Model | Feature Configuration | PR-AUC | ROC-AUC | F1 | Recall | Precision | Specificity | Accuracy |
+|---|---|---|---|---|---|---|---|---|
+| **Majority Baseline** | None (Class Distribution Only) | **0.1142** | 0.5000 | 0.0000 | 0.0000 | 0.0000 | 1.0000 | 0.8858 |
+| **Current-DO Baseline** | Current DO Only (Static Threshold $\le 4.2$ mg/L) | **0.6149** | 0.9024 | 0.4516 | 0.8961 | 0.3019 | 0.7330 | 0.7516 |
+| **Logistic Regression** | Config A — Current DO + Time (5 Predictors) | **0.6019** | 0.8994 | 0.4274 | 0.9003 | 0.2802 | 0.7020 | 0.7246 |
+| **Logistic Regression** | Config B — Current + DO/pH/Temp History (29 Predictors) | **0.6763** | 0.9078 | 0.4295 | 0.8993 | 0.2821 | 0.7051 | 0.7273 |
+| **Logistic Regression** | Config C — Current + Recent DO History (11 Predictors) | **0.6550** | 0.9093 | 0.4549 | 0.8940 | 0.3051 | 0.7376 | 0.7555 |
+| **Random Forest** | Config A — Current DO + Time (5 Predictors) | **0.7107** | 0.9116 | 0.6174 | 0.7709 | 0.5149 | 0.9064 | 0.8909 |
+| **Random Forest** | Config B — Current + DO/pH/Temp History (29 Predictors) | **0.7420** | 0.9169 | 0.6233 | 0.7614 | 0.5276 | 0.9121 | 0.8949 |
+| **Random Forest** | Config C — Current + Recent DO History (11 Predictors) | **0.7471** | 0.9144 | 0.6602 | 0.7561 | 0.5859 | 0.9311 | 0.9111 |
+| **XGBoost** | Config A — Current DO + Time (5 Predictors) | **0.7317** | 0.9150 | 0.5817 | 0.8102 | 0.4537 | 0.8743 | 0.8670 |
+| **XGBoost** | Config B — Current + DO/pH/Temp History (29 Predictors) | **0.7353** | 0.9171 | 0.5922 | 0.7932 | 0.4725 | 0.8859 | 0.8753 |
+| **XGBoost (Champion)** | **Config C — Current + Recent DO History (11 Predictors)** | **0.7574** | **0.9162** | **0.6285** | **0.7975** | **0.5186** | **0.9046** | **0.8924** |
+
+> *Authoritative source artifact:* [`results/reports/MODEL_COMPARISON.csv`](results/reports/MODEL_COMPARISON.csv) | Visualization: [`results/figures/model_comparison_prauc.png`](results/figures/model_comparison_prauc.png)
+
+### 6.2 Feature Ablation: Quantifying Temporal Context
+| Model Architecture | Config A PR-AUC | Config B PR-AUC | Config C PR-AUC | Config B - Config A | Config C - Config A Lift | Config C - Config B |
+|---|---|---|---|---|---|---|
+| **Logistic Regression** | 0.6019 | 0.6763 | 0.6550 | +0.0744 | **+0.0531** | -0.0213 |
+| **Random Forest** | 0.7107 | 0.7420 | 0.7471 | +0.0313 | **+0.0364** | +0.0051 |
+| **XGBoost** | 0.7317 | 0.7353 | 0.7574 | +0.0036 | **+0.0257** | +0.0221 |
+
+---
+
+## 7. Independent External Validation (Oman Nile Tilapia Telemetry)
+
+### 7.1 Dataset & Protocol Specification
+To assess real-world out-of-distribution transferability, the frozen ShinerAI production model (`models/xgboost_config_c.joblib`) was evaluated on an external dataset from Nile tilapia (*Oreochromis niloticus*) aquaculture in North Al Sharqiyah, Oman (*Sensors* 2026, 26(13), 4242; DOI: 10.3390/s26134242; CC BY 4.0; GitHub: `https://github.com/AhmedTheNetCoder/DO-Forecasting-Tilapia-Dataset`).
+
+**Protocol Guardrails:**
+- **Zero Retraining:** The active model was strictly locked and evaluated without weight or threshold adaptation.
+- **Decision Threshold:** Fixed at $\tau = 0.50$.
+- **15-Minute Resampling:** Raw readings aggregated into right-closed $(T-15\text{m}, T]$ intervals.
+- **Eligible Samples:** 742 15-minute intervals spanning 8.74 continuous days of live tilapia monitoring.
+
+### 7.2 Internal vs. External Validation Benchmark
+| Metric | Internal FWI Holdout | External Oman Tilapia Validation |
+|---|---|---|
+| **Sample Count ($N$)** | 8,261 intervals | 742 intervals |
+| **Positive Events (AT_RISK)** | 943 (11.42%) | 0 (0.00%; continuous aeration) |
+| **Negative Samples (SAFE)** | 7,318 | 742 |
+| **True Negatives (TN)** | 6,620 | 742 |
+| **False Positives (FP)** | 698 | 0 |
+| **True Positives (TP)** | 752 | 0 |
+| **False Negatives (FN)** | 191 | 0 |
+| **Specificity (TNR)** | **0.9046 (90.46%)** | **1.0000 (100.0%)** |
+| **Accuracy** | **0.8924 (89.24%)** | **1.0000 (100.0%)** |
+| **Precision** | 0.5186 (51.86%) | 0.0000 (0 TP / 0 alerts) |
+| **Recall / Sensitivity** | 0.7975 (79.75%) | *Undefined* (0 ground-truth events) |
+| **F1 Score** | 0.6285 | *Undefined* (no ground-truth events) |
+| **PR-AUC** | 0.7574 | *Undefined* (single-class ground truth) |
+| **ROC-AUC** | 0.9162 | *Undefined* (single-class ground truth) |
+
+### 7.3 Documented Scientific Limitations
+1. **Absence of Ground-Truth Positives:** Continuous mechanical aeration prevented DO from dropping below 3.0 mg/L (min 6.08 mg/L), precluding empirical evaluation of Recall/Sensitivity.
+2. **Climate & Geographic Shift:** Arid desert Oman vs. humid subtropical Arkansas.
+3. **Species Biology Shift:** Nile tilapia (*O. niloticus*) vs. golden shiner (*N. crysoleucas*).
+4. **Facility Scale Shift:** 180-liter closed indoor/covered experimental tank vs. multi-acre open earthen ponds.
+5. **Sensor Platform Shift:** Low-cost analog probe + ESP32 vs. optical multi-parameter sonde.
+6. **Short Duration:** 8.74 continuous days vs. 63 days of seasonal monitoring.
+7. **Continuous Aeration Regime:** Suppressed natural nocturnal phytoplankton respiration crashes.
+8. **Analog Sensor Dropouts:** Hardware dropouts to 0.0 mg/L required preprocessing filters.
+9. **Unused Co-variates:** External telemetry recorded temperature and pH, but Config C uses DO history only.
+10. **Unproven External Sensitivity Generalization:** Model specificity is verified (100%), but early warning capability in hypoxic external settings requires future open-source hypoxic datasets.
+
 ## Appendix: Complete Figures & Visualizations Reference
 
 The following figures illustrate the complete data flow, pipeline architecture, machine learning evaluations, and model explainability:
 
 ### 1. Research Master Notebook Figures
-1. **Model Comparison across Configurations:** [`results/figures/model_comparison.png`](file:///d:/FISH/results/figures/model_comparison.png)
-2. **Side-by-Side Confusion Matrices (Config C):** [`results/figures/confusion_matrix_final_model.png`](file:///d:/FISH/results/figures/confusion_matrix_final_model.png)
-3. **Receiver Operating Characteristic (ROC) Curves:** [`results/figures/roc_curves.png`](file:///d:/FISH/results/figures/roc_curves.png)
-4. **Precision-Recall (PR) Curves:** [`results/figures/precision_recall_curves.png`](file:///d:/FISH/results/figures/precision_recall_curves.png)
-5. **5-Fold GroupKFold Generalization (Unseen Ponds):** [`results/figures/group_kfold_performance.png`](file:///d:/FISH/results/figures/group_kfold_performance.png)
-6. **Global Feature Importance (SHAP TreeExplainer):** [`results/figures/shap_global_importance.png`](file:///d:/FISH/results/figures/shap_global_importance.png)
-7. **Local Attribution — Genuine AT_RISK Case:** [`results/figures/shap_at_risk_example.png`](file:///d:/FISH/results/figures/shap_at_risk_example.png)
-8. **Local Attribution — Genuine SAFE Case:** [`results/figures/shap_safe_example.png`](file:///d:/FISH/results/figures/shap_safe_example.png)
+1. **Model Comparison across Configurations:** [`results/figures/model_comparison.png`](results/figures/model_comparison.png)
+2. **Side-by-Side Confusion Matrices (Config C):** [`results/figures/confusion_matrix_final_model.png`](results/figures/confusion_matrix_final_model.png)
+3. **Receiver Operating Characteristic (ROC) Curves:** [`results/figures/roc_curves.png`](results/figures/roc_curves.png)
+4. **Precision-Recall (PR) Curves:** [`results/figures/precision_recall_curves.png`](results/figures/precision_recall_curves.png)
+5. **5-Fold GroupKFold Generalization (Unseen Ponds):** [`results/figures/group_kfold_performance.png`](results/figures/group_kfold_performance.png)
+6. **Global Feature Importance (SHAP TreeExplainer):** [`results/figures/shap_global_importance.png`](results/figures/shap_global_importance.png)
+7. **Local Attribution — Genuine AT_RISK Case:** [`results/figures/shap_at_risk_example.png`](results/figures/shap_at_risk_example.png)
+8. **Local Attribution — Genuine SAFE Case:** [`results/figures/shap_safe_example.png`](results/figures/shap_safe_example.png)
 
 ### 2. Exploratory Data Analysis & Quality Control Figures
-9. **Dissolved Oxygen Distribution:** [`results/figures/do_distribution.png`](file:///d:/FISH/results/figures/do_distribution.png)
-10. **pH Distribution:** [`results/figures/ph_distribution.png`](file:///d:/FISH/results/figures/ph_distribution.png)
-11. **Temperature Distribution:** [`results/figures/temperature_distribution.png`](file:///d:/FISH/results/figures/temperature_distribution.png)
-12. **Observations per Pond:** [`results/figures/observations_per_pond.png`](file:///d:/FISH/results/figures/observations_per_pond.png)
-13. **Sampling Gap Distribution:** [`results/figures/sampling_gap_distribution.png`](file:///d:/FISH/results/figures/sampling_gap_distribution.png)
-14. **Low-DO Frequency by Pond:** [`results/figures/do_below_3_by_pond.png`](file:///d:/FISH/results/figures/do_below_3_by_pond.png)
-15. **SAFE vs AT_RISK Overall Distribution:** [`results/figures/safe_vs_at_risk_distribution.png`](file:///d:/FISH/results/figures/safe_vs_at_risk_distribution.png)
-16. **AT_RISK Percentage by Pond:** [`results/figures/at_risk_percentage_by_pond.png`](file:///d:/FISH/results/figures/at_risk_percentage_by_pond.png)
-17. **Representative SAFE Window:** [`results/figures/example_safe_event.png`](file:///d:/FISH/results/figures/example_safe_event.png)
-18. **Representative AT_RISK Window:** [`results/figures/example_at_risk_event.png`](file:///d:/FISH/results/figures/example_at_risk_event.png)
+9. **Dissolved Oxygen Distribution:** [`results/figures/do_distribution.png`](results/figures/do_distribution.png)
+10. **pH Distribution:** [`results/figures/ph_distribution.png`](results/figures/ph_distribution.png)
+11. **Temperature Distribution:** [`results/figures/temperature_distribution.png`](results/figures/temperature_distribution.png)
+12. **Observations per Pond:** [`results/figures/observations_per_pond.png`](results/figures/observations_per_pond.png)
+13. **Sampling Gap Distribution:** [`results/figures/sampling_gap_distribution.png`](results/figures/sampling_gap_distribution.png)
+14. **Low-DO Frequency by Pond:** [`results/figures/do_below_3_by_pond.png`](results/figures/do_below_3_by_pond.png)
+15. **SAFE vs AT_RISK Overall Distribution:** [`results/figures/safe_vs_at_risk_distribution.png`](results/figures/safe_vs_at_risk_distribution.png)
+16. **AT_RISK Percentage by Pond:** [`results/figures/at_risk_percentage_by_pond.png`](results/figures/at_risk_percentage_by_pond.png)
+17. **Representative SAFE Window:** [`results/figures/example_safe_event.png`](results/figures/example_safe_event.png)
+18. **Representative AT_RISK Window:** [`results/figures/example_at_risk_event.png`](results/figures/example_at_risk_event.png)
 
 ### 3. Architecture & Pipeline Diagrams
-19. **System Data Flow Diagram:** [`results/figures/data_flow_diagram.png`](file:///d:/FISH/results/figures/data_flow_diagram.png)
-20. **Phase 3 ML Pipeline Architecture:** [`results/figures/ml_pipeline_diagram.png`](file:///d:/FISH/results/figures/ml_pipeline_diagram.png)
+19. **System Data Flow Diagram:** [`results/figures/data_flow_diagram.png`](results/figures/data_flow_diagram.png)
+20. **Phase 3 ML Pipeline Architecture:** [`results/figures/ml_pipeline_diagram.png`](results/figures/ml_pipeline_diagram.png)
 
 ### 4. Phase 4 Model Explainability Figures
-21. **Global Importance (XGBoost Config C):** [`results/figures/explainability/global_feature_importance_xgb_config_c.png`](file:///d:/FISH/results/figures/explainability/global_feature_importance_xgb_config_c.png)
-22. **Global Importance (Random Forest Config C):** [`results/figures/explainability/global_feature_importance_rf_config_c.png`](file:///d:/FISH/results/figures/explainability/global_feature_importance_rf_config_c.png)
-23. **Local Waterfall (SAFE Case, XGBoost):** [`results/figures/explainability/local_explanation_safe_xgb_config_c.png`](file:///d:/FISH/results/figures/explainability/local_explanation_safe_xgb_config_c.png)
-24. **Local Waterfall (AT_RISK Case, XGBoost):** [`results/figures/explainability/local_explanation_at_risk_xgb_config_c.png`](file:///d:/FISH/results/figures/explainability/local_explanation_at_risk_xgb_config_c.png)
-25. **Local Waterfall (SAFE Case, Random Forest):** [`results/figures/explainability/local_explanation_safe_rf_config_c.png`](file:///d:/FISH/results/figures/explainability/local_explanation_safe_rf_config_c.png)
-26. **Local Waterfall (AT_RISK Case, Random Forest):** [`results/figures/explainability/local_explanation_at_risk_rf_config_c.png`](file:///d:/FISH/results/figures/explainability/local_explanation_at_risk_rf_config_c.png)
+21. **Global Importance (XGBoost Config C):** [`results/figures/explainability/global_feature_importance_xgb_config_c.png`](results/figures/explainability/global_feature_importance_xgb_config_c.png)
+22. **Global Importance (Random Forest Config C):** [`results/figures/explainability/global_feature_importance_rf_config_c.png`](results/figures/explainability/global_feature_importance_rf_config_c.png)
+23. **Local Waterfall (SAFE Case, XGBoost):** [`results/figures/explainability/local_explanation_safe_xgb_config_c.png`](results/figures/explainability/local_explanation_safe_xgb_config_c.png)
+24. **Local Waterfall (AT_RISK Case, XGBoost):** [`results/figures/explainability/local_explanation_at_risk_xgb_config_c.png`](results/figures/explainability/local_explanation_at_risk_xgb_config_c.png)
+25. **Local Waterfall (SAFE Case, Random Forest):** [`results/figures/explainability/local_explanation_safe_rf_config_c.png`](results/figures/explainability/local_explanation_safe_rf_config_c.png)
+26. **Local Waterfall (AT_RISK Case, Random Forest):** [`results/figures/explainability/local_explanation_at_risk_rf_config_c.png`](results/figures/explainability/local_explanation_at_risk_rf_config_c.png)

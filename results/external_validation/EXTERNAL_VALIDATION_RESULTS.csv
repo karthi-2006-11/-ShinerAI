@@ -1,0 +1,2 @@
+dataset,model,decision_threshold,eligible_samples,positives,negatives,tp,fp,tn,fn,accuracy,specificity,precision,recall,f1,pr_auc,roc_auc,mean_predicted_risk,median_predicted_risk
+Oman Nile Tilapia Live Validation Dataset,XGBoost Config C (Frozen),0.5,742,0,742,0,0,742,0,1.0,1.0,0.0,N/A (no positive events in ground truth),N/A (no positive events in ground truth),N/A (undefined for single-class target),N/A (undefined for single-class target),0.0893,0.0711

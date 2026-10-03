@@ -1,0 +1,4 @@
+Model,Config A PR-AUC (Current Only),Config B PR-AUC (Full History),Config C PR-AUC (DO History Only),Config B - Config A,Config C - Config A,Config C - Config B
+Logistic Regression,0.6019,0.6763,0.6550,+0.0744,+0.0531,-0.0213
+Random Forest,0.7107,0.7420,0.7471,+0.0313,+0.0364,+0.0051
+XGBoost,0.7317,0.7353,0.7574,+0.0036,+0.0257,+0.0221
