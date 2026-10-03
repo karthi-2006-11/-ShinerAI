@@ -18,7 +18,7 @@ We examine how this lift was achieved across three feature configurations (Confi
 
 ## 2. Quantitative Empirical Evidence Table
 
-| Model & Configuration | Features Used | Input Dimension | PR-AUC | $\Delta$ vs Static Baseline | Recall ($	au=0.5$) | Precision ($	au=0.5$) | Specificity |
+| Model & Configuration | Features Used | Input Dimension | PR-AUC | $\Delta$ vs Static Baseline | Recall ($\tau=0.5$) | Precision ($\tau=0.5$) | Specificity |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Current-DO Baseline** | `current_do` only | 1 | 0.6149 | 0.0000 | 0.8961 | 0.3019 | 0.7330 |
 | **LR Config A (Snapshot)** | DO, pH, Temp, Time | 5 | 0.6019 | -0.0130 | 0.9003 | 0.2802 | 0.7020 |
@@ -35,37 +35,39 @@ We examine how this lift was achieved across three feature configurations (Confi
 
 ## 3. Two Core Scientific Insights
 
-### Insight 1: Dissolved Oxygen Trajectory Primacy ($+0.1425$ PR-AUC Lift)
-Static water telemetry thresholding (e.g. raising an alarm whenever $\text{DO} \le 4.2\text{ mg/L}$) achieves a PR-AUC of only $0.6149$. While it captures $89.6\%$ of events, it suffers from overwhelming false positive rates ($1,954$ false alarms, Precision = $30.2\%$) because ponds naturally fluctuate diurnally without necessarily crashing into hypoxia.
+### Insight 1: Predictive Value of Recent DO History ($+0.1425$ PR-AUC Lift)
+Static water telemetry thresholding (e.g. raising an alarm whenever $\text{DO} \le 4.2\text{ mg/L}$) achieves a PR-AUC of only $0.6149$. While it captures $89.6\%$ of events, it produces $1,954$ false alarms (Precision = $30.2\%$) because ponds experience natural diurnal fluctuations without necessarily crossing into hypoxia.
 
-By incorporating the preceding 2 hours of dissolved oxygen observations (8 discrete 15-minute lags), the gradient boosting model learns the **negative velocity (descent rate)** and **downward curvature** of oxygen depletion. This yields:
-- PR-AUC improvement from **$0.6149$ to $0.7574$ ($+0.1425$, $+23.18\%$ relative gain)**.
-- False alarms reduced from **$1,954$ to $698$ ($64.3\%$ reduction in false alarms)** while catching **$79.75\%$ of true hypoxic events**.
+**Recent dissolved-oxygen history provides additional predictive information beyond the current DO measurement alone.**
+- Config C uses historical DO observations (8 discrete 15-minute lags: $t-15\text{m} \dots t-120\text{m}$), not an explicitly calculated velocity feature. The gradient-boosted decision trees split directly on these raw historical observations alongside time-of-day indicators.
+- This experimental result yields a PR-AUC improvement from **$0.6149$ to $0.7574$ ($+0.1425$, $+23.18\%$ relative gain)** and reduces false alarms from $1,954$ to $698$ ($64.3\%$ reduction) while maintaining high event sensitivity ($79.75\%$ recall).
+- This $+0.1425$ difference is evidence that recent DO history improves predictive performance for the defined forecasting task. It does **NOT** prove biological causality.
 
-### Insight 2: Sensor Parsimony & Noise Rejection (Config C vs Config B)
-A widespread assumption in sensor IoT is that adding more probe types (e.g. pH, temperature, conductivity) automatically improves ML performance. Our empirical ablation study disproves this assumption:
-- **Config B (All 3 Sensors, 29 Features):** XGBoost achieves PR-AUC = **$0.7353$**.
-- **Config C (DO Alone, 11 Features):** XGBoost achieves PR-AUC = **$0.7574$**.
+### Insight 2: Feature Configuration Comparison Across Model Families
+A widespread assumption in environmental sensing is that adding more sensor variables (e.g. pH, temperature) automatically improves prediction accuracy. Comparing the all-sensor configuration (Config B, 29 features) to the DO-history configuration (Config C, 11 features) reveals that the effect depends on the model family:
+- **Logistic Regression:** Config B > Config C (PR-AUC $0.6763$ vs $0.6550$, $\Delta = +0.0213$). The linear model benefits from including cross-sensor current and lag terms.
+- **Random Forest:** Config C > Config B (PR-AUC $0.7471$ vs $0.7420$, $\Delta = +0.0051$).
+- **XGBoost:** Config C > Config B (PR-AUC $0.7574$ vs $0.7353$, $\Delta = +0.0221$).
 
-**Why does dropping pH and Temperature history improve performance ($+0.0221$ PR-AUC)?**
-1. **Collinear Variance:** In shallow freshwater ponds, temperature changes slowly over hours, while pH lags exhibit high cross-correlation with diurnal photosynthetic cycles. Including 16 additional lagged variables introduces split fragmentation in gradient boosted decision trees.
-2. **Operational Robustness:** In physical aquaculture deployments, pH and temperature probes frequently experience electrochemical drift and biofouling. A model that relies strictly on dissolved oxygen history is both **more accurate** and **drastically cheaper and more reliable to maintain in production**.
+**The DO-history configuration uses fewer sensor variables than the all-sensor configuration.** In non-linear tree ensembles, relying on historical DO observations alone avoids the split fragmentation and collinear variance introduced by 16 additional pH and temperature lag features, achieving equal or superior PR-AUC while requiring fewer input channels.
 
 ---
 
-## 4. Rigorous Demarcation of Novelty vs Overclaims
+## 4. Rigorous Demarcation of Findings vs Overclaims
 
 To ensure complete defensibility under research scrutiny, we explicitly articulate what ShinerAI does and does not claim:
 
 | Topic | Unjustified / Overclaimed Phrasing (Rejected) | Defensible Scientific Finding (Adopted) |
 | :--- | :--- | :--- |
-| **Model Architecture** | "We invented a novel AI architecture for aquaculture." | "We performed an empirical ablation study demonstrating that gradient boosted trees on 2-hour DO lags outperform multi-sensor and static baselines." |
-| **Biological Causality**| "SHAP proves that dissolved oxygen velocity causes hypoxia." | "SHAP feature attributions show that model decision boundaries place primary mathematical weight on recent DO decay rates." |
-| **Hardware Viability** | "The model is proven ready for real-time deployment on ESP32 microcontrollers." | "Inference latency was benchmarked at $< 0.05\text{ ms}$ on development workstation CPU hardware; physical embedded validation remains future work." |
-| **Operational Threshold** | "$3.0\text{ mg/L}$ is the universal biological threshold for aquatic life." | "$3.0\text{ mg/L}$ is the operational threshold selected for this project's early warning criteria." |
+| **Model Architecture** | "We invented a novel AI architecture for aquaculture." | "We performed an empirical ablation study evaluating standard supervised algorithms on temporal lag configurations." |
+| **Historical Dynamics** | "The model calculates and proves physical descent velocity." | "Recent dissolved-oxygen history provides additional predictive information beyond the current DO measurement alone. Config C uses historical DO observations, not an explicitly calculated velocity feature." |
+| **Biological Causality**| "SHAP proves that dissolved oxygen drop causes hypoxia." | "SHAP feature attributions describe mathematical credit assignment within the trained decision trees; they do NOT prove biological causality." |
+| **Hardware Viability** | "The model is proven ready for real-time deployment on ESP32 microcontrollers." | "Inference latency was benchmarked at $< 0.05\text{ ms}$ strictly on a development workstation CPU; physical embedded microcontroller profiling remains future work." |
+| **Operational Threshold** | "$3.0\text{ mg/L}$ is the universal biological threshold for aquatic life." | "$3.0\text{ mg/L}$ is an operational engineering threshold defined for this early warning project, not a universal biological constant." |
+| **Sensor Architecture** | "DO-only sensing is biologically superior, cheaper, and more robust." | "The DO-history configuration uses fewer sensor variables than the all-sensor configuration while achieving competitive predictive performance with tree models." |
 
 ---
 
 ## 5. Audit Conclusion
 
-The scientific contribution of ShinerAI is **empirically rigorous, statistically reproducible, and methodologically sound**. The $+0.1425$ PR-AUC lift and sensor parsimony finding provide concrete, defensible value for aquaculture engineering without resorting to exaggerated architectural claims.
+The scientific contribution of ShinerAI is **empirically grounded, statistically reproducible, and methodologically sound**. The $+0.1425$ PR-AUC lift over the static baseline confirms that recent DO history provides substantial predictive information for early warning without resorting to exaggerated architectural, causal, or hardware claims.

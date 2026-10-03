@@ -86,7 +86,7 @@ This document establishes the formal protocol for the comprehensive scientific a
 
 ### 3.6 Investigation 6: Data Cleaning Accounting Audit
 - **Objective:** Reconcile exact accounting of raw records to ML-ready rows:
-  - Total raw records: 83,074 across 17 ponds.
+  - Total raw continuous readings: 72,750 across 17 ponds.
   - Colliding timestamps: 512 records (258 excess duplicate rows dropped).
   - Unphysical sensor zeros: 629 zero readings cleaned.
   - Already-low DO exclusions ($\text{DO}_t < 3.0\text{ mg/L}$): 15,234 rows.

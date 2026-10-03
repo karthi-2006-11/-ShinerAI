@@ -71,10 +71,13 @@
 **Evidence & Resolution:**
 - **Execution Wall-Time:** Total native pipeline execution is **20.49 seconds** ([`results/timing/pipeline_wall_time.csv`](file:///d:/FISH/results/timing/pipeline_wall_time.csv)). Single-sample inference latency is **< 0.05 ms** on workstation CPU hardware.
 - **Verified Evaluation:** Per-pond chronological split with a **2.0-hour boundary purge gap (108 rows)** ensures zero label leakage ([`results/audit/SPLIT_AUDIT.md`](file:///d:/FISH/results/audit/SPLIT_AUDIT.md)).
-- **Demonstrated Novel Contribution:**
-  1. **Trajectory Primacy:** Adding 2 hours of DO history boosts PR-AUC by **+0.1425** over static thresholding ($0.6149 \to 0.7574$) and reduces false alarms by **64.3%** ($1,954 \to 698$).
-  2. **Sensor Parsimony:** Dropping 18 historical lags of pH and temperature **improves** PR-AUC from 0.7353 (Config B) to 0.7574 (Config C), demonstrating that multi-probe telemetry history introduces collinear noise in shallow commercial ponds ([`results/audit/DOMAIN_CONTRIBUTION_AUDIT.md`](file:///d:/FISH/results/audit/DOMAIN_CONTRIBUTION_AUDIT.md)).
-- **Scientific Humility:** All claims of "novel deep architectures" and "ESP32 certification" have been excised and replaced with rigorous empirical ablation findings.
+- **Demonstrated Empirical Contribution:**
+  1. **Predictive Value of Recent DO History:** Adding 2 hours of DO history boosts PR-AUC by **+0.1425** over static thresholding ($0.6149 \to 0.7574$) and reduces false alarms by **64.3%** ($1,954 \to 698$). Recent dissolved-oxygen history provides additional predictive information beyond the current DO measurement alone. (Note that Config C uses historical DO observations, not an explicitly calculated velocity feature. This difference demonstrates predictive improvement for the defined forecasting task and does not prove biological causality.)
+  2. **Sensor Comparison Across Model Families:** The DO-history configuration uses fewer sensor variables than the all-sensor configuration (11 vs 29 features). Across model families:
+     - Logistic Regression: Config B > Config C (PR-AUC 0.6763 vs 0.6550)
+     - Random Forest: Config C > Config B (PR-AUC 0.7471 vs 0.7420)
+     - XGBoost: Config C > Config B (PR-AUC 0.7574 vs 0.7353)
+- **Scientific Humility:** All claims of "novel deep architectures" and "ESP32 certification" have been excised and replaced with rigorous empirical ablation findings. Inference latency is reported strictly as a development workstation CPU benchmark (< 0.05 ms).
 
 ---
 

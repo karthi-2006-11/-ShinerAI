@@ -19,11 +19,11 @@ The ShinerAI research project was subjected to an exhaustive, adversarial scient
 3. **Zero Data Leakage:** Per-pond chronological 80/20 train/test splits with a **mandatory 2.0-hour boundary purge gap (108 purged rows)** completely eliminate forward-looking target leakage. Preprocessing scalers are strictly encapsulated inside scikit-learn Pipelines.
 4. **Zero Ground-Truth Label Inconsistencies:** Across all 41,277 observations, the forward 2-hour target label matches independent recomputation with **0 discrepancies**.
 5. **Exact Data Cleaning Accounting:** All 72,750 raw continuous readings are 100% reconciled: 629 sensor zero artifacts, 512 colliding records (258 excess rows dropped), 15,234 active hypoxia exclusions, 8,700 short past exclusions, and 6,398 short future exclusions leave **exactly 41,277 clean observations with 0 unexplained rows**.
-6. **Novelty & Domain Contribution Grounded:** The **+0.1425 PR-AUC lift** of Config C over the static DO baseline represents the core scientific contribution: proving the primacy of dissolved oxygen trajectory over static thresholding and demonstrating that multi-sensor history (Config B, 29 features) introduces collinear noise that degrades performance relative to DO history alone (Config C, 11 features).
+6. **Empirical Findings Grounded:** The **+0.1425 PR-AUC lift** of XGBoost Config C over the static DO baseline demonstrates that recent dissolved-oxygen history provides additional predictive information beyond the current DO measurement alone (Config C uses historical DO observations, not an explicitly calculated velocity feature). In tree models, the DO-history configuration achieves superior PR-AUC to the all-sensor configuration (XGBoost: 0.7574 vs 0.7353; Random Forest: 0.7471 vs 0.7420), whereas in Logistic Regression the all-sensor configuration performs better (0.6763 vs 0.6550). The DO-history configuration uses fewer sensor variables than the all-sensor configuration.
 7. **Overclaims Retracted & Remediated:** 
    - Retracted all claims of a "novel neural architecture" (standard supervised algorithms were used in an empirical ablation study).
    - Retracted all claims that SHAP "proves biological causality" (SHAP reflects model decision attribution, not aquatic physiology).
-   - Retracted all claims of "certified readiness for ESP32 microcontrollers" (runtime was benchmarked strictly on development x86_64 CPU hardware; embedded micro-controller deployment is future work).
+   - Retracted all claims of "certified readiness for ESP32 microcontrollers" (runtime was benchmarked strictly on a development workstation CPU; embedded microcontroller deployment is future work).
    - Re-designated the 3.0 mg/L threshold strictly as an **operational project threshold**, not a universal biological constant.
 
 ---
@@ -39,7 +39,7 @@ During project development, two sets of numbers appeared across working drafts:
 1. **Config B and Tree Models in Config C are 100% Identical:** Random Forest and XGBoost in Config B, as well as Random Forest and XGBoost in Config C, are **100% mathematically identical** between Table A and Table B.
 2. **Config A Variations:** Table A reflects an early run during feature engineering before standardizing the 5th cyclical feature (`minute_of_day`) and integrating `StandardScaler` inside the pipeline for Logistic Regression. Table B reflects the finalized production feature set (`current_do`, `current_ph`, `current_temperature`, `hour_of_day`, `minute_of_day`) with standardized pipeline scaling.
 3. **Config C Logistic Regression:** Table A evaluated unscaled raw inputs, whereas Table B encapsulates `StandardScaler` to ensure numerical convergence in the `lbfgs` solver.
-4. **Authoritative Verdict:** **Table B (`MASTER_MODEL_EVALUATION.csv`) is the sole authoritative standard**. It is generated deterministically by the finalized pipeline with fixed seed `random_state=42`. Crucially, **the empirical ranking and scientific conclusions are identical across both tables**: XGBoost Config C is the top model, Config C outperforms Config B, and trajectory features provide a $> +0.14$ PR-AUC advantage over static thresholding.
+4. **Authoritative Verdict:** **Table B (`MASTER_MODEL_EVALUATION.csv`) is the sole authoritative standard**. It is generated deterministically by the finalized pipeline with fixed seed `random_state=42`. Crucially, **the empirical ranking and scientific conclusions are identical across both tables**: XGBoost Config C is the top-performing model, tree models on Config C outperform Config B (while linear models favor Config B), and recent DO history provides a $+0.1425$ PR-AUC improvement over static thresholding.
 
 Full tabular diff is published in [`results/audit/METRIC_RECONCILIATION.csv`](file:///d:/FISH/results/audit/METRIC_RECONCILIATION.csv).
 
@@ -129,9 +129,13 @@ Full cleaning audit is documented in [`results/audit/DATA_CLEANING_AUDIT.md`](fi
 
 ## 8. Domain Contribution & Scientific Value
 
-The core empirical contribution of ShinerAI consists of two demonstrated findings:
-1. **DO Trajectory Primacy (+0.1425 PR-AUC Lift):** Static thresholding achieves PR-AUC 0.6149 with 1,954 false alarms. Adding 2 hours of DO history boosts PR-AUC to **0.7574 (+23.18% relative gain)** while reducing false alarms to 698 (**64.3% reduction**).
-2. **Sensor Parsimony (Config C vs Config B):** Multi-sensor history (Config B, 29 features) achieves PR-AUC 0.7353, underperforming DO history alone (Config C, 11 features, PR-AUC 0.7574). In shallow commercial ponds, adding 16 historical lags of pH and temperature introduces collinear noise and tree fragmentation without adding predictive signal.
+The core empirical findings of ShinerAI demonstrate that:
+1. **Predictive Value of Recent DO History (+0.1425 PR-AUC Lift):** Recent dissolved-oxygen history provides additional predictive information beyond the current DO measurement alone. (Note that Config C uses historical DO observations, not an explicitly calculated velocity feature.) Static thresholding achieves PR-AUC 0.6149 with 1,954 false alarms. Adding 2 hours of DO observations boosts PR-AUC to **0.7574 (+23.18% relative gain)** while reducing false alarms to 698 (**64.3% reduction**). This difference demonstrates that recent DO history improves predictive performance for the defined forecasting task; it does not prove biological causality.
+2. **Feature Configuration Comparison Across Model Families:** The DO-history configuration uses fewer sensor variables than the all-sensor configuration (11 vs 29 features). Across model families:
+   - Logistic Regression: Config B > Config C (PR-AUC 0.6763 vs 0.6550)
+   - Random Forest: Config C > Config B (PR-AUC 0.7471 vs 0.7420)
+   - XGBoost: Config C > Config B (PR-AUC 0.7574 vs 0.7353)
+   In tree models, relying on historical DO observations alone avoids the split fragmentation and collinear variance introduced by 16 additional pH and temperature lag features.
 
 Full ablation analysis is documented in [`results/audit/DOMAIN_CONTRIBUTION_AUDIT.md`](file:///d:/FISH/results/audit/DOMAIN_CONTRIBUTION_AUDIT.md).
 

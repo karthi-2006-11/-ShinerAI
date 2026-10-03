@@ -134,7 +134,7 @@ def test_active_production_model_metrics(temporal_split):
 
 
 def test_domain_contribution_pr_auc_lift():
-    """Verifies that DO trajectory achieves a +0.1425 PR-AUC lift over static DO baseline."""
+    """Verifies that recent DO history achieves a +0.1425 PR-AUC lift over static DO baseline."""
     master_csv = os.path.join("results", "reports", "MASTER_MODEL_EVALUATION.csv")
     assert os.path.exists(master_csv), f"Missing master evaluation: {master_csv}"
     df = pd.read_csv(master_csv)

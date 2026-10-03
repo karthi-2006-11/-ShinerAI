@@ -713,10 +713,13 @@ Detailed investigation of misclassified instances for XGBoost Config C on the 8,
 
 ### 5. Domain-Specific Contribution: DO Trajectory Primacy & Sensor Ablation
 
-A core experimental question addressed in ShinerAI is whether commercial aquaculture systems actually require fragile multiparameter probes (pH, temperature, ORP) for dissolved oxygen forecasting:
-1. **Trajectory Primacy:** Adding 2 hours of DO history boosts PR-AUC by **$+0.1425$** over static threshold models ($0.6149 \to 0.7574$) and **$+0.0257$** over instantaneous multi-sensor snapshots (Config A: $0.7317 \to 0.7574$). The temporal velocity and acceleration of dissolved oxygen are the primary predictors of hypoxia.
-2. **Sensor Redundancy & Robustness:** Multi-sensor history (Config B: 29 features) achieves PR-AUC $0.7353$, which is **inferior** to DO-only history (Config C: 11 features, PR-AUC $0.7574$). Adding 18 historical lags of pH and temperature introduces collinear noise without adding signal.
-3. **Aquaculture Impact:** In commercial fish ponds, pH glass probes experience aggressive biological fouling (algal coatings) and drift rapidly. By demonstrating that a **DO-only monitoring system achieves superior predictive performance**, ShinerAI eliminates the primary hardware failure point and slashes sensor maintenance costs for commercial fish farmers.
+1. **Predictive Value of Recent DO History:** Adding 2 hours of DO history boosts PR-AUC by **$+0.1425$** over static threshold models ($0.6149 \to 0.7574$) and **$+0.0257$** over instantaneous multi-sensor snapshots (Config A: $0.7317 \to 0.7574$). Recent dissolved-oxygen history provides additional predictive information beyond the current DO measurement alone. Note that Config C uses historical DO observations, not an explicitly calculated velocity feature. This difference demonstrates predictive improvement for the defined forecasting task and does not prove biological causality.
+2. **Feature Configuration Comparison Across Model Families:** The DO-history configuration uses fewer sensor variables than the all-sensor configuration (11 vs 29 features). Across model families:
+   - Logistic Regression: Config B > Config C (PR-AUC 0.6763 vs 0.6550)
+   - Random Forest: Config C > Config B (PR-AUC 0.7471 vs 0.7420)
+   - XGBoost: Config C > Config B (PR-AUC 0.7574 vs 0.7353)
+   In tree models, relying on historical DO observations alone avoids the split fragmentation and collinear variance introduced by 16 additional pH and temperature lag features.
+3. **Sensor Parsimony:** For tree-based models, the DO-history configuration achieves competitive predictive performance while using fewer sensor variables than the all-sensor configuration.
 
 ---
 
