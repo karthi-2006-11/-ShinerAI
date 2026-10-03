@@ -696,7 +696,7 @@ Measured natively using `time.perf_counter()` from raw dataset ingestion through
 #### Edge Inference Latency Benchmark
 - **Total Test Inferences:** 8,261 observations
 - **Inference Latency per Observation:** **$< 0.05\text{ ms}$ ($< 50\text{ microseconds}$)**
-- **Deployment Conclusion:** The trained XGBoost Config C model is computationally lightweight and ready for deployment on ultra-low-power microcontrollers (e.g. ESP32, Raspberry Pi Zero) at solar-powered aquaculture buoys with standard 15-minute sensor cadences.
+- **Deployment Feasibility:** The trained XGBoost Config C model is computationally lightweight (< 0.05 ms per observation benchmarked on development workstation CPU), utilizing less than 0.0001% of a standard 15-minute sensor cadence. Porting to dedicated edge hardware (e.g. ESP32, ARM Cortex-M) with physical microcontroller profiling remains recommended future work.
 
 ---
 

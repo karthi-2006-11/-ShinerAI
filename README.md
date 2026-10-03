@@ -96,8 +96,14 @@ jupyter notebook notebooks/ShinerAI_Complete_ML_Pipeline.ipynb
 
 ## Project Status
 
+- **Research Scientific Audit & Evidence Verification** — **COMPLETED**
+  - **Comprehensive Scientific Audit Report:** [`results/audit/SCIENTIFIC_AUDIT_REPORT.md`](file:///d:/FISH/results/audit/SCIENTIFIC_AUDIT_REPORT.md) synthesizing 16 formal audit deliverables certifying zero target leakage, 100% active model reproduction, exact data cleaning accounting, label logic integrity, and defensible research conclusions.
+  - **Mentor Evidence Briefing:** [`results/audit/MENTOR_EVIDENCE_SUMMARY.md`](file:///d:/FISH/results/audit/MENTOR_EVIDENCE_SUMMARY.md) providing direct, tabulated answers to mentor review questions.
+  - **Metric Reconciliation:** [`results/audit/METRIC_RECONCILIATION.csv`](file:///d:/FISH/results/audit/METRIC_RECONCILIATION.csv) reconciling historical draft variations with the authoritative master table.
+  - **Audit Suite Inventory:** Complete suite of 16 markdown audits and reconciliation tables located in [`results/audit/`](file:///d:/FISH/results/audit/).
+
 - **Research Reproducibility & Master Pipeline Notebook** — **COMPLETED**
-  - **Single Source of Truth Notebook:** [`notebooks/ShinerAI_Complete_ML_Pipeline.ipynb`](file:///d:/FISH/notebooks/ShinerAI_Complete_ML_Pipeline.ipynb) covers 33 sequentially structured sections unifying data loading, audit, cleaning, label logic verification, leak-free temporal splitting with 2-hour purge gap, baseline modeling, candidate training (Logistic Regression, Random Forest, XGBoost across Configs A, B, C), 5-fold GroupKFold unseen-pond generalization, temporal holdout evaluation, forensic error analysis, high-precision wall-time profiling, global/local SHAP explainability, and domain-specific contribution experiments.
+  - **Single Source of Truth Notebook:** [`notebooks/ShinerAI_Complete_ML_Pipeline.ipynb`](file:///d:/FISH/notebooks/ShinerAI_Complete_ML_Pipeline.ipynb) covers sequentially structured sections unifying data loading, audit, cleaning, label logic verification, leak-free temporal splitting with 2-hour purge gap, baseline modeling, candidate training (Logistic Regression, Random Forest, XGBoost across Configs A, B, C), 5-fold GroupKFold unseen-pond generalization, temporal holdout evaluation, forensic error analysis, high-precision wall-time profiling, global/local SHAP explainability, and domain-specific contribution experiments.
   - **Master Model Evaluation Table:** [`results/reports/MASTER_MODEL_EVALUATION.csv`](file:///d:/FISH/results/reports/MASTER_MODEL_EVALUATION.csv) comparing all 11 model configurations and 2 baselines across 12 standardized classification metrics (PR-AUC, ROC-AUC, F1, Recall, Precision, Specificity, Accuracy, TP, FP, TN, FN).
   - **Pipeline Wall-Time Benchmark:** [`results/timing/pipeline_wall_time.csv`](file:///d:/FISH/results/timing/pipeline_wall_time.csv) profiling total end-to-end execution (~20.5 seconds) and confirming sub-millisecond inference latency (< 0.05 ms per sample).
   - **Publication Figures:** 8 publication-grade research figures saved in [`results/figures/`](file:///d:/FISH/results/figures/).
