@@ -44,6 +44,19 @@ The model was evaluated strictly on the leak-safe temporal holdout test partitio
 | **Specificity (TNR)** | 0.9046 | 0.9046 | 0.0000 | **EXACT MATCH** |
 | **Accuracy** | 0.8924 | 0.8924 | 0.0000 | **EXACT MATCH** |
 
+> [!NOTE] Metric Provenance & Erroneous Summary Values Clarification
+> During an interim audit summary discussion, an erroneous metric triplet (`F1 = 0.7607`, `Recall = 0.8125`, `Precision = 0.7151`) appeared in conversational dialogue text. A forensic audit across all serialized models, thresholds, splits, and files confirmed that this triplet does not correspond to any trained model, test split, or artifact in the ShinerAI repository.
+> 
+> The sole authoritative and reproducible metrics for the active production model `models/xgboost_config_c.joblib` at decision threshold $\tau = 0.50$ on the frozen temporal holdout test partition ($N = 8,261$, $943$ positive events) are:
+> - **PR-AUC**: $0.7574$
+> - **ROC-AUC**: $0.9162$
+> - **F1-Score**: $0.6285$
+> - **Recall**: $0.7975$ (752 / 943)
+> - **Precision**: $0.5186$ (752 / 1,450)
+> - **Specificity**: $0.9046$ (6,620 / 7,318)
+> - **Accuracy**: $0.8924$ (7,372 / 8,261)
+> - **Confusion Matrix**: $\text{TP} = 752$, $\text{FP} = 698$, $\text{TN} = 6,620$, $\text{FN} = 191$.
+
 ---
 
 ## 4. Confusion Matrix Breakdown

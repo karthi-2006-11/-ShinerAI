@@ -63,6 +63,9 @@ The serialized model `models/xgboost_config_c.joblib` was loaded and evaluated o
 | **True Negatives (TN)** | 6,620 | 6,620 | 0 | **EXACT MATCH** |
 | **False Negatives (FN)** | 191 | 191 | 0 | **EXACT MATCH** |
 
+> [!NOTE] Metric Provenance Clarification
+> During an interim audit summary discussion, an erroneous metric triplet (`F1 = 0.7607`, `Recall = 0.8125`, `Precision = 0.7151`) appeared in conversational dialogue text. A forensic audit across all models, thresholds, splits, and files confirmed that this triplet does not correspond to any trained model, test split, or artifact in the ShinerAI repository. The verified active model `models/xgboost_config_c.joblib` deterministically yields $\text{PR-AUC} = 0.7574$, $\text{ROC-AUC} = 0.9162$, $\text{F1} = 0.6285$, $\text{Recall} = 0.7975$, $\text{Precision} = 0.5186$ ($752\text{ TP}, 698\text{ FP}, 6,620\text{ TN}, 191\text{ FN}$).
+
 Full artifact verification details are documented in [`results/audit/ACTIVE_MODEL_REPRODUCTION.md`](file:///d:/FISH/results/audit/ACTIVE_MODEL_REPRODUCTION.md).
 
 ---
