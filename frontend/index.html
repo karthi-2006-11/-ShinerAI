@@ -138,7 +138,7 @@
                                     <span class="unit-badge">mg/L</span>
                                 </label>
                                 <input type="number" id="currentDo" name="current_do" step="0.01" min="0" max="25" value="5.40" required>
-                                <span class="field-hint">Must be &ge; 3.00 mg/L (hypoxia early warning boundary)</span>
+                                <span class="field-hint threshold-boundary-hint">Must be &ge; <strong class="threshold-val">3.00 mg/L</strong> (hypoxia early warning boundary)</span>
                             </div>
                         </div>
 
@@ -320,8 +320,8 @@
                                 <span id="riskLabel" class="risk-label">SAFE</span>
                             </div>
                             <div class="risk-probability-wrapper">
-                                <span class="prob-label">Estimated Risk Probability</span>
                                 <span id="riskProbabilityValue" class="prob-value">6.7%</span>
+                                <span class="prob-label">Risk Probability</span>
                             </div>
                         </div>
 
