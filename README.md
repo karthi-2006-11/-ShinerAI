@@ -20,7 +20,87 @@ By forecasting impending hypoxia up to **2 hours in advance**, ShinerAI gives fi
 
 ---
 
+## Open & Run ShinerAI
+
+### GitHub Repository
+
+[Open ShinerAI on GitHub](https://github.com/karthi-2006-11/-ShinerAI)
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/karthi-2006-11/-ShinerAI.git
+cd -ShinerAI
+```
+
+### Create & Activate Virtual Environment
+
+**Windows (PowerShell):**
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+**Windows (Command Prompt):**
+```cmd
+python -m venv .venv
+.venv\Scripts\activate.bat
+```
+
+**Linux / macOS:**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Start the Flask Application
+
+Launch the Flask REST backend and interactive web dashboard:
+
+```bash
+python -m flask --app backend.app run
+```
+
+*Or directly:*
+```bash
+python -m backend.app
+```
+
+### Open the Dashboard in the Browser
+
+Open your web browser and navigate to:
+
+```
+http://127.0.0.1:5000/
+```
+*(or [http://127.0.0.1:5000/dashboard](http://127.0.0.1:5000/dashboard))*
+
+The dashboard will open with live API connectivity, preloaded holdout demonstration scenarios (SAFE and AT_RISK), 2-hour DO trajectory charts, and local SHAP feature explanations.
+
+### Launch the Master Research & Reproducibility Notebook
+
+To inspect, run, or reproduce the complete end-to-end machine learning research pipeline in a single self-contained notebook:
+
+```bash
+jupyter notebook notebooks/ShinerAI_Complete_ML_Pipeline.ipynb
+```
+*(or open [`notebooks/ShinerAI_Complete_ML_Pipeline.ipynb`](file:///d:/FISH/notebooks/ShinerAI_Complete_ML_Pipeline.ipynb) directly in VS Code / Jupyter Lab)*
+
+---
+
 ## Project Status
+
+- **Research Reproducibility & Master Pipeline Notebook** — **COMPLETED**
+  - **Single Source of Truth Notebook:** [`notebooks/ShinerAI_Complete_ML_Pipeline.ipynb`](file:///d:/FISH/notebooks/ShinerAI_Complete_ML_Pipeline.ipynb) covers 33 sequentially structured sections unifying data loading, audit, cleaning, label logic verification, leak-free temporal splitting with 2-hour purge gap, baseline modeling, candidate training (Logistic Regression, Random Forest, XGBoost across Configs A, B, C), 5-fold GroupKFold unseen-pond generalization, temporal holdout evaluation, forensic error analysis, high-precision wall-time profiling, global/local SHAP explainability, and domain-specific contribution experiments.
+  - **Master Model Evaluation Table:** [`results/reports/MASTER_MODEL_EVALUATION.csv`](file:///d:/FISH/results/reports/MASTER_MODEL_EVALUATION.csv) comparing all 11 model configurations and 2 baselines across 12 standardized classification metrics (PR-AUC, ROC-AUC, F1, Recall, Precision, Specificity, Accuracy, TP, FP, TN, FN).
+  - **Pipeline Wall-Time Benchmark:** [`results/timing/pipeline_wall_time.csv`](file:///d:/FISH/results/timing/pipeline_wall_time.csv) profiling total end-to-end execution (~20.5 seconds) and confirming sub-millisecond inference latency (< 0.05 ms per sample).
+  - **Publication Figures:** 8 publication-grade research figures saved in [`results/figures/`](file:///d:/FISH/results/figures/).
 
 - **Phase 1: Environment Setup & Dataset Audit** — **COMPLETED**
   - Audited 17 pond continuous time-series CSV files (72,750 continuous 15-minute readings).

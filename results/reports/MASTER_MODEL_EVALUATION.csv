@@ -1,0 +1,12 @@
+model,feature_set,evaluation_scheme,pr_auc,roc_auc,f1,recall,precision,specificity,accuracy,threshold,tp,fp,tn,fn,test_examples,test_pos,test_neg
+Majority Baseline,None,Temporal Holdout (2h purge),0.1142,0.5,0.0,0.0,0.0,1.0,0.8858,0.5,0,0,7318,943,8261,943,7318
+Current-DO Baseline (DO <= 4.2),current_do only,Temporal Holdout (2h purge),0.6149,0.9024,0.4516,0.8961,0.3019,0.733,0.7516,0.5,845,1954,5364,98,8261,943,7318
+Logistic Regression,Config A (Current Only),Temporal Holdout (2h purge),0.6019,0.8994,0.4274,0.9003,0.2802,0.702,0.7246,0.5,849,2181,5137,94,8261,943,7318
+Logistic Regression,Config B (Current + History),Temporal Holdout (2h purge),0.6763,0.9078,0.4295,0.8993,0.2821,0.7051,0.7273,0.5,848,2158,5160,95,8261,943,7318
+Logistic Regression,Config C (DO History Only),Temporal Holdout (2h purge),0.655,0.9093,0.4549,0.894,0.3051,0.7376,0.7555,0.5,843,1920,5398,100,8261,943,7318
+Random Forest,Config A (Current Only),Temporal Holdout (2h purge),0.7107,0.9116,0.6174,0.7709,0.5149,0.9064,0.8909,0.5,727,685,6633,216,8261,943,7318
+Random Forest,Config B (Current + History),Temporal Holdout (2h purge),0.742,0.9169,0.6233,0.7614,0.5276,0.9121,0.8949,0.5,718,643,6675,225,8261,943,7318
+Random Forest,Config C (DO History Only),Temporal Holdout (2h purge),0.7471,0.9144,0.6602,0.7561,0.5859,0.9311,0.9111,0.5,713,504,6814,230,8261,943,7318
+XGBoost,Config A (Current Only),Temporal Holdout (2h purge),0.7317,0.915,0.5817,0.8102,0.4537,0.8743,0.867,0.5,764,920,6398,179,8261,943,7318
+XGBoost,Config B (Current + History),Temporal Holdout (2h purge),0.7353,0.9171,0.5922,0.7932,0.4725,0.8859,0.8753,0.5,748,835,6483,195,8261,943,7318
+XGBoost,Config C (DO History Only),Temporal Holdout (2h purge),0.7574,0.9162,0.6285,0.7975,0.5186,0.9046,0.8924,0.5,752,698,6620,191,8261,943,7318

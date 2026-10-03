@@ -1,0 +1,14 @@
+pipeline_step,wall_time_seconds,percentage_of_total,details
+Dataset Loading & Audit,0.1275,0.62%,Measured via time.perf_counter() across native execution
+Temporal Split with 2h Purge,0.0965,0.47%,Measured via time.perf_counter() across native execution
+Baseline Model Evaluation,0.1977,0.96%,Measured via time.perf_counter() across native execution
+"Logistic Regression Training (Configs A, B, C)",0.2587,1.26%,Measured via time.perf_counter() across native execution
+"Random Forest Training (Configs A, B, C)",3.6648,17.88%,Measured via time.perf_counter() across native execution
+"XGBoost Training (Configs A, B, C)",2.7274,13.31%,Measured via time.perf_counter() across native execution
+5-Fold GroupKFold Cross-Validation,12.452,60.77%,Measured via time.perf_counter() across native execution
+Temporal Holdout Evaluation & Metrics Compilation,0.0008,0.00%,Measured via time.perf_counter() across native execution
+Error Analysis (FP & FN Diagnostics),0.022,0.11%,Measured via time.perf_counter() across native execution
+SHAP Global Importance Calculation,0.1488,0.73%,Measured via time.perf_counter() across native execution
+SHAP Local Explanations (SAFE & AT_RISK),0.4342,2.12%,Measured via time.perf_counter() across native execution
+Domain Contribution Experiments,0.3606,1.76%,Measured via time.perf_counter() across native execution
+TOTAL PIPELINE WALL-TIME,20.491,100.00%,"Complete ingestion, training, cross-validation, holdout evaluation, SHAP, and experiments"
