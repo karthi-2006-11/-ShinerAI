@@ -148,6 +148,8 @@ def generate_comparisons():
     # Ordered approaches
     labels = [
         "Majority\nBaseline",
+        "Persistence\nBaseline",
+        "120m Trend\nBaseline",
         "Current-DO\nHeuristic",
         "LogReg\n(Config A)",
         "LogReg\n(Config B)",
@@ -160,13 +162,13 @@ def generate_comparisons():
         "XGBoost\n(Config C)*",
     ]
     praucs = [
-        0.1142, 0.6149,
+        0.1142, 0.1142, 0.4656, 0.6149,
         0.6019, 0.6763, 0.6550,
         0.7107, 0.7420, 0.7471,
         0.7317, 0.7353, 0.7574,
     ]
     colors = [
-        c_baseline, c_baseline,
+        c_baseline, c_baseline, "#94A3B8", c_baseline,
         c_cfg_a, c_cfg_b, c_cfg_c,
         c_cfg_a, c_cfg_b, c_cfg_c,
         c_cfg_a, c_cfg_b, "#059669", # Emerald highlight for active champion
@@ -195,10 +197,10 @@ def generate_comparisons():
     ax.axhline(0.6149, color="#E11D48", linestyle=":", linewidth=1.4, zorder=2, label="Current-DO Threshold Heuristic (0.6149)")
 
     # Grouping background bands
-    ax.axvspan(-0.5, 1.5, color="#F1F5F9", alpha=0.5, zorder=1)
-    ax.axvspan(1.5, 4.5, color="#F8FAFC", alpha=0.5, zorder=1)
-    ax.axvspan(4.5, 7.5, color="#F1F5F9", alpha=0.5, zorder=1)
-    ax.axvspan(7.5, 10.5, color="#F0FDF4", alpha=0.6, zorder=1)
+    ax.axvspan(-0.5, 3.5, color="#F1F5F9", alpha=0.5, zorder=1)
+    ax.axvspan(3.5, 6.5, color="#F8FAFC", alpha=0.5, zorder=1)
+    ax.axvspan(6.5, 9.5, color="#F1F5F9", alpha=0.5, zorder=1)
+    ax.axvspan(9.5, 12.5, color="#F0FDF4", alpha=0.6, zorder=1)
 
     # Titles & labels
     ax.set_title(

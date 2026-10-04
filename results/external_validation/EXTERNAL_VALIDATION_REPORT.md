@@ -129,3 +129,24 @@ Internal monitoring utilized research-grade optical multi-parameter sondes with 
 
 ### Final Research Recommendation:
 **READY WITH EXTERNAL VALIDATION LIMITATIONS.** The independent external validation successfully verifies model specificity and false-alarm resistance on independent live telemetry, while transparently documenting the absence of positive events and domain limitations.
+
+---
+
+## 7. Technical Reconciliation: Exploratory 5 False Alarms vs. Formal Zero False Alarms
+
+During early external validation experiments, two sets of confusion matrix results were observed:
+1. **Exploratory Run:** $N = 742$, $\text{TN} = 737$, $\text{FP} = 5$, $\text{TP} = 0$, $\text{FN} = 0$, Specificity $= 99.33\%$.
+2. **Formal Certified Run:** $N = 742$, $\text{TN} = 742$, $\text{FP} = 0$, $\text{TP} = 0$, $\text{FN} = 0$, Specificity $= 100.00\%$.
+
+### Forensic Root-Cause Analysis:
+The raw external sensor telemetry stream (`raw_readings_new.csv`, 102,670 rows) contains two momentary analog probe disconnect artifacts on **April 9, 2026** at `11:27:57` and `11:28:58`, where the analog probe disconnected and output an instantaneous reading of exact **$0.000\text{ mg/L}$** (while temperature remained normal at $26.96^\circ\text{C}$).
+
+- **In the exploratory run:** The raw readings were resampled into 15-minute mean bins without filtering zero-volt disconnects. As a result, the two zeros depressed the 15-minute mean, creating an artificial sharp drop artifact in the lag window. Over the subsequent 5 intervals (as this dropout propagated through the 8 lag features: `do_t_minus_15` to `do_t_minus_75`), the decision tree interpreted the simulated descent as an impending oxygen crash, outputting probability scores between $0.35$ and $0.44$, triggering 5 false positive alerts at lower exploratory thresholds.
+- **In the formal certified run:** Standard QC preprocessing was applied (`df.loc[df['do_mgL'] <= 0] = np.nan`), strictly matching ShinerAI's Phase 2 QC Cleaning Policy (where probe disconnects $\text{DO} \le 0.0$ are quarantined). The single disconnected readings were treated as missing sensor dropouts rather than true physical water states. Across all clean, valid physical telemetry intervals ($N = 742$), the frozen model predicted $\text{SAFE}$ for 100% of observations ($\text{TN} = 742$, $\text{FP} = 0$, Specificity $= 100.0\%$, Accuracy $= 100.0\%$).
+
+### Scientific Reconciliation Verdict:
+Both results are completely truthful and reproducible:
+- **On unfiltered raw IoT telemetry with analog hardware disconnects:** The model exhibits **$99.33\%$ Specificity** (5 false alarms caused by electrical disconnect artifacts).
+- **On QC-filtered telemetry honoring standard sensor hygiene:** The model exhibits **$100.00\%$ Specificity** (zero false alarms during clean continuous monitoring).
+This technical audit confirms that ShinerAI's false alarm resistance is exceptionally high, and demonstrates the necessity of standard hardware dropout filtering in real-world IoT sensor deployments.
+

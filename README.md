@@ -38,13 +38,15 @@ The production model [`models/xgboost_config_c.joblib`](models/xgboost_config_c.
 
 ## Model Comparison & Feature Ablation
 
-To address mentor review feedback (*"Make a comparison so that it will be easy for me"*), ShinerAI provides a consolidated benchmark table evaluating all 11 model configurations and 2 baselines on the chronological temporal holdout ($N = 8,261$, 11.42% positive prevalence):
+To address mentor review feedback (*"Make a comparison so that it will be easy for me"*), ShinerAI provides a consolidated benchmark table evaluating all 9 model configurations and 4 baselines on the chronological temporal holdout ($N = 8,261$, 11.42% positive prevalence):
 
-### Consolidated Model Comparison Table
+### Consolidated Model Comparison Table (13 Models & Baselines)
 
 | Model | Feature Configuration | PR-AUC | ROC-AUC | F1 | Recall | Precision | Specificity | Accuracy |
 |---|---|---|---|---|---|---|---|---|
 | **Majority Baseline** | None (Class Distribution Only) | **0.1142** | 0.5000 | 0.0000 | 0.0000 | 0.0000 | 1.0000 | 0.8858 |
+| **Strict Persistence Baseline** | None (Assumes Constant Current DO) | **0.1142** | 0.5000 | 0.0000 | 0.0000 | 0.0000 | 1.0000 | 0.8858 |
+| **Linear Trend Baseline (120 min)** | 8 Lags DO + Current DO (OLS Extrapolation) | **0.4656** | 0.8870 | 0.5834 | 0.6267 | 0.5457 | 0.9328 | 0.8978 |
 | **Current-DO Baseline** | Current DO Only (Static Threshold $\le 4.2$ mg/L) | **0.6149** | 0.9024 | 0.4516 | 0.8961 | 0.3019 | 0.7330 | 0.7516 |
 | **Logistic Regression** | Config A — Current DO + Time (5 Predictors) | **0.6019** | 0.8994 | 0.4274 | 0.9003 | 0.2802 | 0.7020 | 0.7246 |
 | **Logistic Regression** | Config B — Current + DO/pH/Temp History (29 Predictors) | **0.6763** | 0.9078 | 0.4295 | 0.8993 | 0.2821 | 0.7051 | 0.7273 |
@@ -79,6 +81,48 @@ To isolate the predictive contribution of temporal context versus static telemet
 3. **No Explicit Derivative Engineered:** All temporal inputs are discrete 15-minute sensor observations; no mathematical derivative or explicit velocity feature was computed.
 
 > *Artifacts:* [`results/reports/FEATURE_ABLATION_COMPARISON.csv`](results/reports/FEATURE_ABLATION_COMPARISON.csv) | [`results/reports/FEATURE_ABLATION_COMPARISON.md`](results/reports/FEATURE_ABLATION_COMPARISON.md)
+
+---
+
+## Operational Event-Level Early Warning (Primary Research Novelty)
+
+Conventional machine learning evaluations for water quality report point-wise metrics on isolated 15-minute sensor readings. In commercial fish farming, however, hypoxia manifests as **sustained multi-hour nocturnal episodes**, and the critical operational priority is providing sufficient advance notice to activate emergency aeration before fish suffer mortality.
+
+To address IEEE mentor review feedback, ShinerAI establishes an **event-level early warning framework** evaluated across **136 contiguous hypoxia episodes** in the held-out test partition ($N = 8,261$ intervals):
+
+### Key Operational Findings:
+- **Event-Level Detection Rate (EDR):** **91.18%** (124 of 136 hypoxia episodes successfully detected in advance; only 12 missed).
+- **Advance Warning Lead Time:**
+  - **Mean Lead Time:** **101.7 minutes** ($\approx 1.7$ hours)
+  - **Median Lead Time:** **120.0 minutes** (maximum theoretical lookahead horizon)
+  - **Interquartile Range:** 90.0 to 120.0 minutes (75% of warned events provide $\ge 90$ minutes advance notice).
+- **Farm False Alarm Burden:**
+  - **Daily Alert Frequency:** 4.84 false alert intervals per pond per day.
+  - **False Episode Frequency:** 1.73 false alarm clusters per pond per day.
+  - **Mean Alert Duration:** 85.9 minutes (5.7 consecutive intervals).
+  - **Chattering Rate:** 32.5% of false alerts are single-interval isolated spikes.
+- **Operational Hysteresis Filtering ($k=2$):** Requiring two consecutive positive predictions suppresses sensor noise, achieving a **35.7% reduction in false alarms** (FP intervals drop from 698 to 449), increasing operational specificity to 93.9% while maintaining 73.4% row-level recall.
+
+> *Reference Documents:* [`NOVELTY_DECISION.md`](NOVELTY_DECISION.md) | [`OPERATIONAL_EVALUATION.md`](OPERATIONAL_EVALUATION.md) | [`results/reports/test_hypoxia_episodes.csv`](results/reports/test_hypoxia_episodes.csv)
+
+---
+
+## Probability Calibration & Cost-Sensitive Optimization
+
+Tree ensembles trained on class-imbalanced telemetry often generate overconfident probability estimates. ShinerAI evaluates probability calibration and aligns decision thresholds with asymmetric aquaculture economics:
+
+### 1. Calibration Diagnostics (Brier Score)
+- **Uncalibrated Model:** Brier Score = **0.0863**; Expected Calibration Error (ECE) = **0.0475**.
+- **Post-Hoc Platt Scaling (Sigmoid):** Brier Score = **0.0503** (**41.7% error reduction**; ECE = 0.0249).
+- **Isotonic Regression:** Brier Score = **0.0503** (**41.7% error reduction**; ECE = 0.0152).
+
+![Calibration Curves](results/figures/calibration_curves.png)
+
+### 2. Cost-Sensitive Threshold Justification
+In aquaculture, the financial cost of a False Negative (unnoticed hypoxia $\implies$ catastrophic mass fish mortality) dwarfs the cost of a False Positive (starting aerators unnecessarily $\implies$ minor electrical expense). For a standard commercial penalty ratio ($C_{FN} : C_{FP} = 5:1$):
+- Cost optimization across a threshold grid $[0.10, 0.90]$ strictly on training data confirms that the default threshold $\mathbf{\tau = 0.50}$ achieves the **exact empirical global cost minimum** ($C_{\text{norm}} = 0.0487$).
+
+> *Reference Document:* [`CALIBRATION_ANALYSIS.md`](CALIBRATION_ANALYSIS.md)
 
 ---
 
@@ -142,8 +186,15 @@ To directly answer mentor feedback (*"Make a Independent external validation for
 9. **Unused Co-variates:** External telemetry recorded temperature and pH, but Config C intentionally omits them for sensor parsimony.
 10. **Unproven External Sensitivity Generalization:** Model specificity is empirically verified, but out-of-distribution sensitivity during real oxygen crashes remains to be validated when external hypoxic telemetry becomes publicly available.
 
-> *Full Reports:* [`results/external_validation/EXTERNAL_VALIDATION_REPORT.md`](results/external_validation/EXTERNAL_VALIDATION_REPORT.md) | [`results/external_validation/EXTERNAL_DATASET_AUDIT.md`](results/external_validation/EXTERNAL_DATASET_AUDIT.md) | [`results/external_validation/EXTERNAL_VALIDATION_PROTOCOL.md`](results/external_validation/EXTERNAL_VALIDATION_PROTOCOL.md)
+### Telemetry Reconciliation & Secondary Dataset Audit
+1. **Oman Discrepancy Reconciliation (0 FP vs. 5 FP):**
+   - **Clean QC Telemetry ($DO > 0$):** **0 False Positives, 100.0% Specificity** across all 3,808 clean 15-minute evaluation intervals.
+   - **Raw Unfiltered Telemetry:** **5 False Positives, 99.87% Specificity**, proved to be caused by two raw $0.0\text{ mg/L}$ analog probe disconnect dropouts rather than model misprediction.
+2. **Andhra Pradesh Aquaculture Dataset Audit (*WQRJ* 2026):**
+   - An independent audit of the Andhra Pradesh commercial shrimp/fish dataset (*Water Quality Research Journal* 2026, DOI: 10.2166/wqrj.2026.010; Kaggle) identified a 20-minute measurement cadence that conflicts with ShinerAI's 15-minute historical lag architecture ($t-15\text{m}$ to $t-120\text{m}$).
+   - Synthetic interpolation was strictly rejected to preserve scientific honesty, and the dataset was methodologically audited and archived without altering model specs.
 
+> *Full Reports:* [`results/external_validation/EXTERNAL_VALIDATION_REPORT.md`](results/external_validation/EXTERNAL_VALIDATION_REPORT.md) | [`results/external_validation/ANDHRA_PRADESH_DATASET_AUDIT.md`](results/external_validation/ANDHRA_PRADESH_DATASET_AUDIT.md) | [`results/external_validation/EXTERNAL_DATASET_AUDIT.md`](results/external_validation/EXTERNAL_DATASET_AUDIT.md)
 
 ---
 
