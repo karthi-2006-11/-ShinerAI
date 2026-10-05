@@ -57,22 +57,24 @@ By structuring the test set (7,472 operational intervals, representing 77.8 days
    $$\text{EDR} = \frac{\text{Episodes with } \ge 1 \text{ Early Warning}}{\text{Total Hypoxia Episodes}} = \frac{124}{136} = \mathbf{91.18\%}$$
    *(Compared to row-level recall of 79.75%, the real-world protection rate is 91.18%—only 12 out of 136 events were missed).*
 
-2. **Advance Warning Lead Time Distribution:**
-   - **Mean Lead Time:** **101.7 minutes** ($\approx 1.7$ hours)
-   - **Median Lead Time:** **120.0 minutes** (the theoretical maximum 2-hour prediction horizon)
-   - **75th Percentile:** 120.0 minutes
-   - **25th Percentile:** 90.0 minutes
-   - *Conclusion:* Over 75% of warned events provide between 90 and 120 minutes of advance intervention time, more than sufficient to dispatch staff or engage mechanical aerators.
+2. **Advance Warning Lead Time Distribution (Physical Ground-Truth Onset):**
+   - **Mean Physical Lead Time:** **93.1 minutes** ($\approx 1.55$ hours)
+   - **Median Physical Lead Time:** **120.0 minutes** (the maximum 2-hour prediction horizon)
+   - **Maximum Physical Lead Time:** **120.0 minutes** (strictly bounded by 2-hour contract)
+   - **Minimum Physical Lead Time:** **15.0 minutes**
+   - **Distribution:** 91.1% $\ge 30$ min, 83.9% $\ge 60$ min, 70.2% $\ge 90$ min, 52.4% $\ge 120$ min.
+   - *(Note: Impending block duration evaluation yielded 101.7 min mean and an artifactual 345 min max due to 20 multi-dip episode merges; bounding against the first physical low-DO crossing certifies 93.1 min mean and zero alerts post-onset).*
 
 3. **Farm False Alarm Burden:**
    - **Daily Alert Frequency:** 4.84 raw alert intervals per pond per operational day.
    - **False Episode Frequency:** 1.73 false alarm episodes per pond per day.
-   - **Mean False Alarm Duration:** 85.9 minutes (5.7 consecutive 15-min intervals).
+   - **Mean Alert Duration:** 87.3 minutes (5.8 consecutive 15-min intervals).
    - **Chattering Rate:** 32.5% of false alerts are single-step isolated spikes.
 
-4. **Operational Mitigation via Hysteresis Filtering:**
-   - Requiring two consecutive positive predictions ($k=2$) or a 30-minute confirmation window eliminates single-step sensor noise and chattering.
-   - **Impact:** False positive intervals drop from 698 to 449 (**35.7% reduction in false alarms**), while preserving 73.4% row recall and increasing operational specificity from 90.5% to 93.9%.
+4. **Operational Mitigation via Hysteresis Filtering ($k=2$):**
+   - Requiring two consecutive positive predictions eliminates single-step sensor noise and chattering.
+   - **Impact on False Alarms:** False positive intervals drop from 698 to 507/508 (**27.4% / 27.2% reduction in FP intervals**); distinct false alarm clusters drop from 234 to 157 (**32.9% reduction in false alert incidents**), raising specificity to 93.1%.
+   - **Safety & Lead-Time Trade-Off:** Requiring a confirmation step drops event detection rate from 91.18% (124/136) to 86.76% (118/136; 6 transient episodes missed) and reduces mean advance notice from 93.1 to 85.9 minutes (-7.2 min penalty). Both sides of the operational trade-off are transparently characterized.
 
 ---
 
@@ -101,4 +103,4 @@ To preserve scientific rigor and ensure immediate IEEE mentor acceptance:
 ## 6. Publication Abstract & IEEE Contribution Statement
 
 > **Contribution Statement:**  
-> *"Unlike conventional aquaculture machine learning studies that evaluate point-wise classification accuracy on isolated sensor intervals—obscuring alert fatigue and practical intervention time—this work formulates an event-level early warning framework for dissolved oxygen depletion. We demonstrate that while XGBoost achieves a standard row-level recall of 79.75%, its event-level detection rate is 91.18% across 136 contiguous hypoxia episodes, providing an average advance warning lead time of 101.7 minutes (median 120.0 minutes). Furthermore, we quantify the operational false alarm burden (4.84 alerts/pond/day) and demonstrate that a two-step hysteresis filter reduces operator alarm fatigue by 35.7% while maintaining high protective sensitivity."*
+> *"Unlike conventional aquaculture machine learning studies that evaluate point-wise classification accuracy on isolated sensor intervals—obscuring alert fatigue and practical intervention time—this work formulates an event-level early warning framework for dissolved oxygen depletion. We demonstrate that while XGBoost achieves a standard row-level recall of 79.75%, its event-level detection rate is 91.18% across 136 contiguous hypoxia episodes, providing an average advance warning lead time of 93.1 minutes (median 120.0 minutes) strictly prior to physical onset. Furthermore, we quantify the operational false alarm burden (4.84 alerts/pond/day) and demonstrate that a two-step hysteresis filter reduces false alarms by 27.4% (and false alert episodes by 32.9%), characterizing the operational trade-off with event detection and warning delay."*

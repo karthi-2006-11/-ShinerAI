@@ -852,17 +852,18 @@ To address mentor requirements for benchmarking beyond naive majority voting and
 Unlike conventional aquaculture ML studies that evaluate point-wise classification accuracy on isolated 15-minute sensor readings, ShinerAI formalizes an **event-level early warning framework** evaluated across **136 contiguous hypoxia episodes** in the test set.
 
 ### 9.1 Event-Level Metrics & Lead-Time Analysis
-- **Episode Detection Rate (EDR):** **91.18%** (124 of 136 episodes successfully warned in advance; only 12 episodes missed).
-- **Advance Warning Lead Time Distribution:**
-  - **Mean Lead Time:** **101.7 minutes** ($\approx 1.7$ hours)
-  - **Median Lead Time:** **120.0 minutes** (full 2-hour window)
-  - **25th–75th Percentile:** 90.0 to 120.0 minutes (75% of warned events have $\ge 90$ minutes advance notice).
+- **Episode Detection Rate (EDR):** **91.18%** (124 of 136 episodes successfully warned in advance; only 12 episodes missed). All alerts occurred strictly prior to physical onset.
+- **Advance Warning Lead Time Distribution (Physical Ground Truth):**
+  - **Mean Physical Lead Time:** **93.1 minutes** ($\approx 1.55$ hours)
+  - **Median Physical Lead Time:** **120.0 minutes** (full 2-hour window; strictly bounded $[15, 120]$ min)
+  - **Distribution:** 91.1% $\ge 30$ min, 83.9% $\ge 60$ min, 70.2% $\ge 90$ min, 52.4% $\ge 120$ min.
+  - *(Impending block duration legacy calculation yielded 101.7 min mean / 345 min max due to 20 multi-dip merges; true physical lead time is strictly $\le 120$ min).*
 - **Farm False Alarm Burden:**
   - **Daily Alert Frequency:** 4.84 raw alert intervals per pond per day.
   - **Daily False Episode Frequency:** 1.73 false alarm clusters per pond per day.
-  - **Mean Alert Duration:** 85.9 minutes (5.7 intervals).
+  - **Mean Alert Duration:** 87.3 minutes (5.8 intervals).
   - **Chattering Rate:** 32.5% of false alarms are single-interval isolated pulses.
-- **Operational Hysteresis Filtering ($k=2$):** Requiring two consecutive positive intervals reduces false alarm intervals from 698 to 449 (**35.7% reduction**), elevating operational specificity from 90.5% to 93.9% while maintaining 73.4% row-level recall.
+- **Operational Hysteresis Filtering ($k=2$):** Requiring two consecutive positive intervals reduces false alarm intervals from 698 to 507/508 (**27.4% / 27.2% reduction**) and distinct false alarm clusters from 234 to 157 (**32.9% reduction**), with an event detection trade-off of 86.76% (118/136; 6 transient episodes missed) and mean lead time of 85.9 minutes.
 
 ---
 

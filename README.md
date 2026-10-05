@@ -91,19 +91,20 @@ Conventional machine learning evaluations for water quality report point-wise me
 To address IEEE mentor review feedback, ShinerAI establishes an **event-level early warning framework** evaluated across **136 contiguous hypoxia episodes** in the held-out test partition ($N = 8,261$ intervals):
 
 ### Key Operational Findings:
-- **Event-Level Detection Rate (EDR):** **91.18%** (124 of 136 hypoxia episodes successfully detected in advance; only 12 missed).
-- **Advance Warning Lead Time:**
-  - **Mean Lead Time:** **101.7 minutes** ($\approx 1.7$ hours)
-  - **Median Lead Time:** **120.0 minutes** (maximum theoretical lookahead horizon)
-  - **Interquartile Range:** 90.0 to 120.0 minutes (75% of warned events provide $\ge 90$ minutes advance notice).
+- **Event-Level Detection Rate (EDR):** **91.18%** (124 of 136 hypoxia episodes successfully detected prior to physical onset; only 12 missed).
+- **Advance Warning Lead Time (Physical Onset):**
+  - **Mean Physical Lead Time:** **93.1 minutes** ($\approx 1.55$ hours advance notice before DO < 3.0 mg/L)
+  - **Median Physical Lead Time:** **120.0 minutes** (full 2-hour lookahead contract; max 120.0 minutes)
+  - **Notice Distribution:** 91.1% $\ge 30$ min, 83.9% $\ge 60$ min, 70.2% $\ge 90$ min, 52.4% $\ge 120$ min.
+  - *(Impending block duration legacy calculation yielded 101.7 min mean / 345 min max due to 20 multi-dip episode merges; true physical lead time is strictly $\le 120$ min).*
 - **Farm False Alarm Burden:**
   - **Daily Alert Frequency:** 4.84 false alert intervals per pond per day.
   - **False Episode Frequency:** 1.73 false alarm clusters per pond per day.
-  - **Mean Alert Duration:** 85.9 minutes (5.7 consecutive intervals).
+  - **Mean Alert Duration:** 87.3 minutes (5.8 consecutive intervals).
   - **Chattering Rate:** 32.5% of false alerts are single-interval isolated spikes.
-- **Operational Hysteresis Filtering ($k=2$):** Requiring two consecutive positive predictions suppresses sensor noise, achieving a **35.7% reduction in false alarms** (FP intervals drop from 698 to 449), increasing operational specificity to 93.9% while maintaining 73.4% row-level recall.
+- **Operational Hysteresis Filtering ($k=2$):** Requiring two consecutive positive predictions suppresses sensor noise, achieving a **27.4% reduction in false alarm intervals** (698 to 507/508 FPs) and a **32.9% reduction in false alarm clusters** (234 to 157), with the trade-off of 86.76% event detection (118/136; 6 transient episodes missed) and 85.9-minute lead time.
 
-> *Reference Documents:* [`NOVELTY_DECISION.md`](NOVELTY_DECISION.md) | [`OPERATIONAL_EVALUATION.md`](OPERATIONAL_EVALUATION.md) | [`results/reports/test_hypoxia_episodes.csv`](results/reports/test_hypoxia_episodes.csv)
+> *Reference Documents:* [`NOVELTY_DECISION.md`](NOVELTY_DECISION.md) | [`OPERATIONAL_EVALUATION.md`](OPERATIONAL_EVALUATION.md) | [`EVENT_LEVEL_VERIFICATION.md`](EVENT_LEVEL_VERIFICATION.md) | [`ALERT_STABILITY_VERIFICATION.md`](ALERT_STABILITY_VERIFICATION.md) | [`SECOND_EXTERNAL_DATASET_SEARCH.md`](SECOND_EXTERNAL_DATASET_SEARCH.md)
 
 ---
 
