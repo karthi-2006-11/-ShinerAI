@@ -1,0 +1,21 @@
+Metric,Value
+Raw Rows in File,620
+Genuine Timestamped Telemetry (Part A),310 rows (Rows 0-309)
+Duplicate Date-Only Rows (Part B),310 rows (Rows 310-619)
+Duplicate Sensor Readings (Part B vs A),310 / 310 (100.0% identical)
+Calendar Span,102 days (2021-06-25 to 2021-10-06)
+Active Monitoring Days,13 discrete dates
+Median Sampling Cadence (Active),20.0 seconds
+Longest Continuous Session,174.6 minutes (< 3 hours)
+Continuous Monitoring Required for ShinerAI,240.0 minutes (4.0 hours)
+Rows with 2-Hour Lookback History,71 rows
+Rows with 2-Hour Future Coverage,0 rows (Zero)
+Eligible Evaluation Samples for ShinerAI,0 samples (0.0%)
+Sensor Hardware Disconnects (-127 C),20 occurrences
+Firmware Math Errors (Ammonia inf),9 occurrences
+Physical Scale Violations (pH < 0 or > 14),28 occurrences
+DO Signal Dropouts (DO == 0.0 mg/L),338 occurrences (54.5%)
+Rapid DO Chattering (0 -> 21 mg/L in <=60s),19 occurrences
+Synthetic Interpolation Required?,YES (Mandatory to create any sample)
+Compliance with ShinerAI Freeze,FAIL (Violates zero-interpolation policy)
+External Validation Recommendation,DEFINITIVE NO-GO

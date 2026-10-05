@@ -57,3 +57,23 @@ The audit reveals a fundamental environmental characteristic of the external Oma
 4. **ROC-AUC and PR-AUC** are mathematically undefined for a single-class dataset (scikit-learn raises an `UndefinedMetricWarning` / `ValueError` because rank-order discrimination requires both positive and negative examples).
 
 Under strict scientific guidelines, ShinerAI **refuses to fabricate positive samples** or adjust the operational threshold merely to manufacture artificial metrics. The audit confirms this dataset provides a rigorous test of **model false-alarm rate (Specificity)** under stable, well-aerated aquaculture conditions.
+
+---
+
+## 4. Independent External Dataset 2 Audit: Nigeria Aquaponics (`IoTPond10.csv`)
+
+In October 2026, ShinerAI audited a secondary candidate external dataset: **Sensor-Based Aquaponics Fish Pond Datasets** (`IoTPond10.csv`) from the High Performance Intelligent Computing (HiPIC) lab at the University of Nigeria, Nsukka (Lacuna Fund; Kaggle).
+
+### Key Audit Findings & NO-GO Determination:
+1. **File Metadata:** 620 raw rows, 11 columns, SHA256: `7cd9f8b98a6edf6f2111046f35b19a1304f840c4eaef0b182b5b8922cd601690`.
+2. **Structural Bifurcation:** The file contains only 310 unique sensor readings (Rows 0–309, with `CET` timestamps); Rows 310–619 are an exact 100% duplicate copy pasted with date-only strings (`D/M/YYYY`) to pair with catfish growth measurements.
+3. **Severe Hardware Artifacts:**
+   - 20 occurrences of `-127.0°C` (Dallas DS18B20 hardware disconnect code).
+   - 338 rows (54.5%) of `0.00 mg/L` DO dropouts.
+   - 9 rows with `inf` ammonia (firmware division-by-zero error).
+   - 316 rows with negative turbidity (uncalibrated zero offset down to -97 NTU).
+   - 28 rows with pH outside physical 0–14 scale (-1.98 to 15.45).
+4. **DO Chattering:** DO oscillates between 0.00 mg/L and 21.65–32.41 mg/L within 20 to 60 seconds, representing electronic noise rather than biological hypoxia.
+5. **Temporal Infeasibility:** ShinerAI requires a 4-hour continuous window (2h lookback + 2h lookahead = 240 minutes). The longest continuous session in `IoTPond10.csv` is only 174.6 minutes (June 25, 2021). The number of eligible evaluation samples is **strictly zero (0 samples, 0.0%)**.
+6. **Scientific Decision:** **DEFINITIVE NO-GO**. In accordance with scientific integrity guidelines, ShinerAI strictly rejects synthetic temporal interpolation or fabricating artificial evaluation samples. Full audit report documented in [`docs/EXTERNAL_NIGERIA_DATASET_AUDIT.md`](../../docs/EXTERNAL_NIGERIA_DATASET_AUDIT.md).
+
