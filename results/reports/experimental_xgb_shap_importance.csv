@@ -1,0 +1,17 @@
+feature,mean_abs_shap
+current_do,1.3918087
+minute_of_day,0.5432867
+do_t_minus_15,0.27023533
+do_t_minus_120,0.23694043
+do_change_120,0.21845402
+do_t_minus_30,0.19511662
+hour_of_day,0.18975331
+do_t_minus_60,0.17734686
+do_t_minus_45,0.14664863
+do_change_15,0.14399126
+do_change_60,0.14349781
+do_accel_15,0.13183391
+do_t_minus_75,0.11897635
+do_change_30,0.11717585
+do_t_minus_90,0.09008564
+do_t_minus_105,0.08958905
