@@ -112,4 +112,3 @@ To evaluate the out-of-distribution generalizability of the frozen ShinerAI earl
 3. **Rigorous Provenance:** Funded by the Lacuna Fund and published by academic researchers at the University of Nigeria, Nsukka.
 4. **Zero Model Alteration:** Can be evaluated against the frozen `models/xgboost_config_c.joblib` artifact at fixed threshold $\tau = 0.50$.
 
-> **Status:** Awaiting user review and authorization before proceeding with the frozen external-validation experiment.
